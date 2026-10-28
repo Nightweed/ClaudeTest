@@ -1,0 +1,50 @@
+.data-display {
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.data-display h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  color: #61dafb;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px;
+  background-color: #1a1a1a;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.data-label {
+  font-size: 0.8rem;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.data-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #61dafb;
+}
+
+.data-value.positive {
+  color: #4ade80;
+}
+
+.data-value.negative {
+  color: #f87171;
+}
