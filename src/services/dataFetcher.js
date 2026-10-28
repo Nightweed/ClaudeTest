@@ -4,14 +4,9 @@ const API_KEY = process.env.REACT_APP_COINALYZE_API_KEY;
 // A böngésző CORS miatt nem hívhatja közvetlenül; a dev szerver proxyja (package.json) továbbítja.
 const API_BASE_URL = '/v1';
 
+// Csak az egy órás gyertyák kellenek, minden számítás ebből készül.
 const INTERVAL_SECONDS = {
-  '1min': 60,
-  '5min': 300,
-  '15min': 900,
-  '30min': 1800,
   '1hour': 3600,
-  '4hour': 14400,
-  daily: 86400,
 };
 
 // Egy szimbólum history tömbjét adja vissza növekvő időrendben.
@@ -43,21 +38,21 @@ const fetchHistory = async (endpoint, symbol, interval, limit, extraParams = {})
 };
 
 // t, o, h, l, c, v, bv, tx, btx
-export const fetchOHLCVHistory = (symbol, interval = '5min', limit = 200) =>
+export const fetchOHLCVHistory = (symbol, interval = '1hour', limit = 200) =>
   fetchHistory('ohlcv-history', symbol, interval, limit);
 
 // t, o, h, l, c
-export const fetchOpenInterestHistory = (symbol, interval = '5min', limit = 200) =>
+export const fetchOpenInterestHistory = (symbol, interval = '1hour', limit = 200) =>
   fetchHistory('open-interest-history', symbol, interval, limit, { convert_to_usd: 'true' });
 
 // t, o, h, l, c
-export const fetchFundingRateHistory = (symbol, interval = '5min', limit = 200) =>
+export const fetchFundingRateHistory = (symbol, interval = '1hour', limit = 200) =>
   fetchHistory('funding-rate-history', symbol, interval, limit);
 
 // t, l (long liq), s (short liq)
-export const fetchLiquidationHistory = (symbol, interval = '5min', limit = 200) =>
+export const fetchLiquidationHistory = (symbol, interval = '1hour', limit = 200) =>
   fetchHistory('liquidation-history', symbol, interval, limit, { convert_to_usd: 'true' });
 
 // t, r, l, s
-export const fetchLongShortRatioHistory = (symbol, interval = '5min', limit = 200) =>
+export const fetchLongShortRatioHistory = (symbol, interval = '1hour', limit = 200) =>
   fetchHistory('long-short-ratio-history', symbol, interval, limit);

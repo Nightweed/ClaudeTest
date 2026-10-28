@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
 import { groupExplanation } from '../utils/dashboardData';
 import { Card } from './ui';
@@ -8,14 +8,30 @@ import './Dashboard.css';
 
 const DEFAULT_SYMBOL = 'SOLUSDT_PERP.A'; // Binance SOL perp
 const DEFAULT_SPOTS = 'SOLUSD.A,SOLUSDC.A,SOLUSDT.F'; // Binance SOL/USDT, SOL/USDC + SOL/USDT (F) spot, vesszővel elválasztva
-const INTERVALS = ['5min', '15min', '1hour'];
+const INTERVAL = '1hour'; // csak egy órás gyertyákkal számolunk
+const REFRESH_MS = 5 * 60 * 1000; // ennyinként friss adatot kérünk le
 
 function Dashboard() {
   const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
   const [spotSymbols, setSpotSymbols] = useState(DEFAULT_SPOTS);
-  const [interval, setIntervalValue] = useState('5min');
   const [tab, setTab] = useState('overview');
   const { fetchData, loading, errors, calcWarnings, rows, snaps, explanation, cache } = useMarketData();
+  const started = useRef(false);
+  const latest = useRef({ symbol, spotSymbols, fetchData });
+  latest.current = { symbol, spotSymbols, fetchData };
+
+  // Induláskor lekérjük az adatokat, utána 5 percenként friss lekérés (gyorsítótár kihagyásával).
+  useEffect(() => {
+    if (!started.current) {
+      started.current = true;
+      latest.current.fetchData(DEFAULT_SYMBOL, DEFAULT_SPOTS, INTERVAL);
+    }
+    const id = setInterval(() => {
+      const { symbol: s, spotSymbols: sp, fetchData: load } = latest.current;
+      load(s, sp, INTERVAL, true);
+    }, REFRESH_MS);
+    return () => clearInterval(id);
+  }, []);
 
   const chron = useMemo(() => [...rows].reverse(), [rows]);
   const last = snaps[snaps.length - 1];
@@ -49,14 +65,7 @@ function Dashboard() {
       </header>
 
       <div className="controls">
-        <div className="seg" role="group" aria-label="Időtáv">
-          {INTERVALS.map((i) => (
-            <button key={i} aria-pressed={interval === i} onClick={() => setIntervalValue(i)} disabled={loading}>{i}</button>
-          ))}
-        </div>
-        <button className="btn" onClick={() => fetchData(symbol, spotSymbols, interval)} disabled={loading}>{loading ? 'Töltés...' : 'Lekérés'}</button>
-        <button className="btn primary" onClick={() => fetchData(symbol, spotSymbols, interval, true)} disabled={loading} title="Friss adatok lekérése a gyorsítótár kihagyásával">Frissítés</button>
-        {cache && <span className="muted">Utolsó lekérés: {new Date(cache.at).toLocaleTimeString('hu-HU')}</span>}
+        {cache && <span className="muted">Utolsó frissítés: {new Date(cache.at).toLocaleTimeString('hu-HU')}</span>}
         <details className="settings">
           <summary>Szimbólumok</summary>
           <div className="settings-body">
@@ -76,7 +85,7 @@ function Dashboard() {
       {!last && (
         <Card className="empty">
           <h2>{loading ? 'Adatok töltése...' : 'Még nincs adat'}</h2>
-          <p>{loading ? 'A lekérés a rate limit miatt egy kis időt vehet igénybe.' : 'Nyomd meg a Lekérés gombot, és a dashboard feltöltődik az utolsó gyertya számításával.'}</p>
+          <p>{loading ? 'A lekérés a rate limit miatt egy kis időt vehet igénybe.' : 'Az oldal indulásakor automatikusan lekéri az adatokat, utána 5 percenként frissíti.'}</p>
         </Card>
       )}
 
@@ -87,7 +96,7 @@ function Dashboard() {
           )}
           {tab === 'calc' && <CalcTab groups={groups} />}
 
-          <footer className="foot">Forrás: Coinalyze, {symbol} és spot: {spotSymbols}. Intervallum: {interval}.</footer>
+          <footer className="foot">Forrás: Coinalyze, {symbol} és spot: {spotSymbols}. Intervallum: {INTERVAL}.</footer>
         </>
       )}
     </div>

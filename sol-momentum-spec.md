@@ -47,7 +47,7 @@ Forrás: hivatalos doksi – https://api.coinalyze.net/v1/doc/ (ellenőrizve: 20
 ### Hívás-költségvetés (40/perc alatt maradni)
 
 Frissítésenként kb.: perp_N × (ohlcv + oi + funding + predicted_funding + liq + lsr) + spot_N × ohlcv.
-N=5 perp, 3 spot → max ~33 hívás. Frissítés 5 percenként (5min gyertyánál). Kell egy egyszerű queue/limiter, ami garantálja a 40/perc alatti tempót, és 429-nél tiszteli a `Retry-After`-t.
+N=5 perp, 3 spot → max ~33 hívás. Frissítés 5 percenként (1 órás gyertyákból számolva, az óránkénti adat 5 percenként frissül). Kell egy egyszerű queue/limiter, ami garantálja a 40/perc alatti tempót, és 429-nél tiszteli a `Retry-After`-t.
 
 ---
 
@@ -166,7 +166,7 @@ Címkék:
 ```ts
 type MomentumSnapshot = {
   asset: "SOL";
-  interval: "5min" | "15min" | "1hour";
+  interval: "1hour";
   t: number;                 // gyertya időbélyeg (s)
   price: number;             // OI-súlyozott vagy a legnagyobb perp záróára
   momentum: number;          // -1..+1
@@ -198,8 +198,8 @@ Plusz a teljes idősor (`MomentumSnapshot[]`), hogy a dashboard grafikont tudjon
 
 ## 7. Időkeretek
 
-- Elsődleges: `5min` (kb. 5–7 nap előzmény a megőrzési limit miatt)
-- Kontextus: `1hour` ugyanazzal a számítással
+- Egyetlen időkeret: `1hour`. Minden számítás (OHLCV, OI, funding, likvidáció, long/short ratio, spot) ebből készül.
+- Az ablakok gyertyaszámban értendők, tehát 1 gyertya = 1 óra (pl. z-score ablak 50 óra).
 - Később: `daily` (ez nem törlődik, hosszabb trendhez)
 
 ---

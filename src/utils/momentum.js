@@ -2,8 +2,8 @@
 // Csak tiszta függvények, nincs benne fetch.
 
 export const CONFIG = {
-  zWindow: 50, // rolling z-score ablak (gyertya)
-  divWindow: 20, // divergencia / abszorpció / CVD meredekség ablak
+  zWindow: 50, // rolling z-score ablak (gyertya = 1 óra)
+  divWindow: 20, // divergencia / abszorpció / CVD meredekség ablak (óra)
   deadband: 0.25, // OI kvadráns holtsáv a rolling szórás többszöröse
   zClamp: 3,
   volumeUnit: 'BASE', // BASE: v SOL-ban van (-> USD = v * c); USD: már USD
@@ -263,7 +263,7 @@ const aggregateAt = (t, perps, spots) => {
 // perps: [{ symbol, ohlcv, oi, funding, predFunding, liq, lsr, volumeUnit? }]
 // spots: [{ symbol, ohlcv, volumeUnit? }]
 // Visszaad: { snapshots: MomentumSnapshot[], warnings: string[] }
-export const computeMomentum = ({ perps = [], spots = [], interval = '5min', asset = 'SOL', config = {} }) => {
+export const computeMomentum = ({ perps = [], spots = [], interval = '1hour', asset = 'SOL', config = {} }) => {
   const cfg = {
     ...CONFIG,
     ...config,

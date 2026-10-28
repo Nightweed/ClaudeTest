@@ -177,18 +177,21 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 .dot-pos { background: var(--pos); } .dot-neg { background: var(--neg); } .dot-neutral { background: var(--muted); }
 
 /* ---- lépések ---- */
-.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start; }
-.group { padding: 0; }
-.group summary { cursor: pointer; list-style: none; padding: 16px 22px; font: 600 16px var(--display); display: flex; justify-content: space-between; }
+.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)); gap: 20px; align-items: start; }
+.group { padding: 0; overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
+.group:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); box-shadow: 0 10px 30px -18px var(--glow-a); }
+.group summary { cursor: pointer; list-style: none; padding: 20px 26px; font: 600 18px var(--display); display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: color 0.2s; }
+.group summary:hover { color: var(--accent); }
 .group summary::-webkit-details-marker { display: none; }
-.group summary::after { content: '+'; color: var(--muted); font-size: 20px; }
+.group summary::after { content: '+'; color: var(--muted); font-size: 24px; line-height: 1; }
 .group[open] summary::after { content: '–'; }
-.step { padding: 12px 22px; border-top: 1px solid var(--border); }
-.step-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.step-row b { font-weight: 600; }
-.step-row em { font: 600 13.5px var(--mono); font-style: normal; white-space: nowrap; }
-.step p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
-.step code { display: block; margin-top: 6px; font: 12px/1.5 var(--mono); color: var(--ink-2); background: var(--surface-2); padding: 6px 9px; border-radius: 8px; overflow-x: auto; white-space: nowrap; }
+.step { padding: 16px 26px; border-top: 1px solid var(--border); transition: background 0.2s; }
+.step:hover { background: var(--surface-2); }
+.step-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.step-row b { font-weight: 600; font-size: 15px; }
+.step-row em { font: 600 14px var(--mono); font-style: normal; text-align: right; overflow-wrap: anywhere; }
+.step p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.step code { display: block; margin-top: 8px; font: 13px/1.6 var(--mono); color: var(--ink-2); background: var(--surface-2); padding: 8px 11px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font: 12px var(--mono); text-align: center; }
 
