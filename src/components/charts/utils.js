@@ -41,6 +41,15 @@ export const timeLabel = (t, withDay) => {
   return withDay ? `${d.getMonth() + 1}.${d.getDate()}. ${hm}` : hm;
 };
 
+// Az y-tengely feliratainak szélességéből számolt bal margó (kb. 7px / karakter, 11px-es tick).
+export const leftMargin = (labels) => Math.max(54, Math.ceil(Math.max(0, ...labels.map((s) => String(s).length)) * 7) + 14);
+
+// Szűk x-tengelyen a felirat levágása a rendelkezésre álló szélességre.
+export const fitLabel = (text, px) => {
+  const max = Math.max(3, Math.floor(px / 6.5));
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+};
+
 export const linePath = (values, x, y) => {
   let d = '';
   let open = false;

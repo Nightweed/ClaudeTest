@@ -155,8 +155,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 .pill-pos { color: var(--pos); border-color: color-mix(in srgb, var(--pos) 45%, transparent); background: color-mix(in srgb, var(--pos) 12%, transparent); }
 .pill-neutral { color: var(--ink-2); border-color: var(--border); background: var(--surface-2); }
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.kpi { display: flex; flex-direction: column; gap: 8px; }
-.kpi-v { font: 600 clamp(24px, 3.4vw, 34px)/1.1 var(--mono); letter-spacing: -0.02em; white-space: pre; overflow-wrap: anywhere; }
+.kpi { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.kpi-v { font: 600 clamp(22px, 3.4vw, 34px)/1.15 var(--mono); letter-spacing: -0.02em; overflow-wrap: anywhere; }
 .kpi p { margin: auto 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .kpi-neg { border-color: color-mix(in srgb, var(--neg) 38%, var(--border)); }
 .kpi-neg .kpi-v { color: var(--neg); }

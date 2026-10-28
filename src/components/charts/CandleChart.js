@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWidth, useHover, niceTicks, timeLabel } from './utils';
+import { useWidth, useHover, niceTicks, timeLabel, leftMargin } from './utils';
 import { num } from '../../utils/format';
 
 // Gyertyadiagram + alatta volumen-sáv. candles: [{ t, o, h, l, c, v, delta }]
@@ -9,16 +9,17 @@ export default function CandleChart({ candles, height = 320, priceFmt = (v) => n
   const n = candles.length;
   if (!n) return <div ref={ref} className="chart-empty">Nincs adat</div>;
 
-  const m = { l: 54, r: 12, t: 10, b: 22 };
   const volH = 54;
   const gap = 14;
-  const iw = w - m.l - m.r;
-  const ih = height - m.t - m.b - volH - gap;
   const lo0 = Math.min(...candles.map((c) => c.l));
   const hi0 = Math.max(...candles.map((c) => c.h));
   const pad = (hi0 - lo0) * 0.06 || 1;
   const lo = lo0 - pad;
   const hi = hi0 + pad;
+  const ticks = niceTicks(lo, hi);
+  const m = { l: leftMargin(ticks.map(priceFmt)), r: 12, t: 10, b: 22 };
+  const iw = w - m.l - m.r;
+  const ih = height - m.t - m.b - volH - gap;
   const vMax = Math.max(...candles.map((c) => c.v)) || 1;
   const slot = iw / n;
   const x = (i) => m.l + (i + 0.5) * slot;
@@ -33,7 +34,7 @@ export default function CandleChart({ candles, height = 320, priceFmt = (v) => n
   return (
     <div ref={ref} className="chart-wrap" onMouseLeave={clear}>
       <svg width={w} height={height} role="img" aria-label="Gyertyadiagram">
-        {niceTicks(lo, hi).map((t) => (
+        {ticks.map((t) => (
           <g key={t}>
             <line className="grid" x1={m.l} x2={w - m.r} y1={y(t)} y2={y(t)} />
             <text className="tick" x={m.l - 8} y={y(t)} textAnchor="end" dominantBaseline="middle">{priceFmt(t)}</text>

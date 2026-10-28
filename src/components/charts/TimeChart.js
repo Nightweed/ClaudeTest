@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { useWidth, useHover, niceTicks, timeLabel, linePath } from './utils';
+import { useWidth, useHover, niceTicks, timeLabel, linePath, leftMargin } from './utils';
 import { compact } from '../../utils/format';
 
 // times: unix másodpercek; series: [{ name, color, values }] ugyanolyan hosszú tömbökkel.
@@ -8,9 +8,6 @@ export default function TimeChart({ times, series, bars = false, area = false, h
   const [ref, w] = useWidth();
   const { hover, hoverAt, clear } = useHover();
   const gid = useId();
-  const m = { l: 54, r: 12, t: 10, b: 22 };
-  const iw = w - m.l - m.r;
-  const ih = height - m.t - m.b;
   const n = times.length;
   const vals = series.flatMap((s) => s.values).filter(Number.isFinite);
 
@@ -24,10 +21,13 @@ export default function TimeChart({ times, series, bars = false, area = false, h
   lo -= pad;
   hi += pad;
 
+  const ticks = niceTicks(lo, hi);
+  const m = { l: leftMargin(ticks.map(fmt)), r: 12, t: 10, b: 22 };
+  const iw = w - m.l - m.r;
+  const ih = height - m.t - m.b;
   const slot = iw / n;
   const x = (i) => m.l + (i + 0.5) * slot;
   const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
-  const ticks = niceTicks(lo, hi);
   const withDay = times[n - 1] - times[0] > 20 * 3600;
   const xTicks = [...new Set([0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (n - 1))))];
   const tip = tipFmt || fmt;

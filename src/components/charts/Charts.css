@@ -1,5 +1,5 @@
 .chart-wrap { position: relative; width: 100%; }
-.chart-wrap svg { display: block; overflow: visible; }
+.chart-wrap svg { display: block; overflow: hidden; }
 .chart-empty { padding: 48px 0; text-align: center; color: var(--muted); font-size: 13px; }
 
 .chart-wrap .grid { stroke: var(--grid); stroke-width: 1; }
@@ -35,17 +35,17 @@
 .gauge .needle-hub { fill: var(--ink); stroke: var(--surface); stroke-width: 3; }
 
 .contrib { display: flex; flex-direction: column; gap: 14px; }
-.contrib-row { display: grid; grid-template-columns: minmax(120px, 1.1fr) 2fr 52px; gap: 14px; align-items: center; }
-.contrib-name { display: flex; flex-direction: column; gap: 2px; }
+.contrib-row { display: grid; grid-template-columns: minmax(120px, 1.1fr) 2fr minmax(88px, 0.8fr); gap: 14px; align-items: center; }
+.contrib-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
 .contrib-name b { font-weight: 600; font-size: 14px; }
 .contrib-name span { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .contrib-track { position: relative; height: 14px; background: var(--surface-2); border-radius: 7px; }
 .contrib-zero { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--axis); }
 .contrib-bar { position: absolute; top: 0; bottom: 0; border-radius: 7px; min-width: 3px; }
-.contrib-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.contrib-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 
 @media (max-width: 560px) {
-  .contrib-row { grid-template-columns: 1fr 52px; }
+  .contrib-row { grid-template-columns: minmax(0, 1fr) minmax(72px, auto); }
   .contrib-track { grid-column: 1 / -1; order: 3; }
 }
 
