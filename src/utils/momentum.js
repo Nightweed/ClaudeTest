@@ -141,7 +141,7 @@ export const getOIQuadrant = (dPricePct, dOIPct, priceDead = 0, oiDead = 0) => {
   return dOIPct > 0 ? 'NEW_SHORTS' : 'LONG_LIQUIDATION';
 };
 
-const QUADRANT_SCORE = {
+export const QUADRANT_SCORE = {
   NEW_LONGS: 1,
   SHORT_COVERING: 0.5,
   NEW_SHORTS: -1,
@@ -177,7 +177,7 @@ export const calculateMomentumScore = (
 
 // ---------- 4. aggregálás SOL szintre ----------
 
-const byT = (rows = []) => new Map(rows.map((r) => [r.t, r]));
+export const byT = (rows = []) => new Map(rows.map((r) => [r.t, r]));
 const sumBy = (rows, f) => rows.reduce((a, r) => a + f(r), 0);
 
 const prepareMarket = (m, cfg, warnings) => {
@@ -397,6 +397,8 @@ export const computeMomentum = ({ perps = [], spots = [], interval = '5min', ass
         spot: {
           spotDeltaUsd: a.spotDeltaUsd,
           perpDeltaUsd: a.perpDeltaUsd,
+          perpVUsd: a.perpVUsd,
+          spotVUsd: a.spotVUsd,
           spotZ: zc(spotZ[i]),
           perpZ: zc(perpZ[i]),
         },

@@ -1,5 +1,6 @@
 // Az utolsó gyertya számításának lépésenkénti, magyarázott felbontása a táblázathoz.
 // Csak megjelenítési segéd: a számokat a momentum.js adja.
+import { QUADRANT_SCORE, calculateDeltaPct } from './momentum';
 
 const f = (x, d = 3) => (typeof x === 'number' && !Number.isNaN(x) ? Number(x.toFixed(d)).toLocaleString('hu-HU', { maximumFractionDigits: d }) : '–');
 const pct = (x, d = 3) => `${f(x * 100, d)}%`;
@@ -12,7 +13,6 @@ const QUADRANT_TEXT = {
   NEUTRAL: 'a változás a holtsávon belül van, nincs jel',
 };
 
-const QUADRANT_POINTS = { NEW_LONGS: 1, SHORT_COVERING: 0.5, NEW_SHORTS: -1, LONG_LIQUIDATION: -0.5, NEUTRAL: 0 };
 
 // candle: nyers OHLCV gyertya, oi: nyers OI pont ugyanarra az időre, snap: computeMomentum snapshotja
 export const buildExplanation = (snap, candle, oi) => {
@@ -33,8 +33,9 @@ export const buildExplanation = (snap, candle, oi) => {
 
     { group: 'Order flow', name: 'Eladási volumen', formula: 'v − bv', values: `${f(candle.v, 2)} − ${f(candle.bv, 2)}`, result: f(sellVol, 2), text: 'Ami nem vételi, az agresszív eladás.' },
     { group: 'Order flow', name: 'Delta', formula: '2·bv − v', values: `2·${f(candle.bv, 2)} − ${f(candle.v, 2)}`, result: f(delta, 2), text: 'Vételi mínusz eladási agresszió. Pozitív: a vevők nyomnak.' },
-    { group: 'Order flow', name: 'Delta %', formula: 'delta / v', values: `${f(delta, 2)} / ${f(candle.v, 2)}`, result: pct(c.deltaPct, 2), text: '−100%…+100%: mekkora része a forgalomnak az egyik oldal többlete.' },
-    { group: 'Order flow', name: 'Delta z-score', formula: '(x − átlag) / szórás, 50 gyertya', values: '', result: f(si.deltaPctZ, 2), text: 'Az utolsó delta % mennyire szokatlan az elmúlt 50 gyertyához képest (−3…+3).' },
+    { group: 'Order flow', name: 'Delta % (perp)', formula: 'delta / v', values: `${f(delta, 2)} / ${f(candle.v, 2)}`, result: pct(calculateDeltaPct(delta, candle.v), 2), text: 'Csak a perp piac, SOL-ban (ez szerepel a táblázat Delta % oszlopában).' },
+    { group: 'Order flow', name: 'Delta % (kombinált)', formula: '(perp + spot delta USD) / (perp + spot volumen USD)', values: `(${f(snap.debug.spot.perpDeltaUsd, 0)} + ${f(snap.debug.spot.spotDeltaUsd, 0)}) / (${f(snap.debug.spot.perpVUsd, 0)} + ${f(snap.debug.spot.spotVUsd, 0)})`, result: pct(c.deltaPct, 2), text: 'Ebből készül a z-score, ezért térhet el a perp értéktől.' },
+    { group: 'Order flow', name: 'Delta z-score', formula: '(kombinált Delta % − átlag) / szórás, 50 gyertya', values: '', result: f(si.deltaPctZ, 2), text: 'Az utolsó kombinált delta % mennyire szokatlan az elmúlt 50 gyertyához képest (−3…+3).' },
     { group: 'Order flow', name: 'CVD (perp, USD)', formula: 'Σ delta · ár, az ablak elejétől', values: '', result: f(c.cvdPerp, 0), text: 'Kumulált vételi/eladási nyomás. Emelkedő CVD: tartós vásárlói dominancia.' },
     { group: 'Order flow', name: 'CVD meredekség z', formula: 'regresszió meredekség / átl. |delta|, majd z', values: '', result: f(si.cvdSlopeZ, 2), text: 'A CVD trendje az utolsó 20 gyertyán, normalizálva. Pozitív: a CVD emelkedik.' },
     { group: 'Order flow', name: 'Méret-ferdeség', formula: 'átl. vételi méret / átl. eladási méret', values: '', result: f(c.sizeSkew, 2), text: '>1: a vételi oldalon nagyobbak a kötések (nagyobb szereplők vesznek).' },
@@ -45,7 +46,7 @@ export const buildExplanation = (snap, candle, oi) => {
     { group: 'Open interest', name: 'Ármozgás', formula: '(c − o) / o', values: `(${f(candle.c)} − ${f(candle.o)}) / ${f(candle.o)}`, result: pct(dPrice), text: 'A gyertya ármozgása.' },
     { group: 'Open interest', name: 'OI változás', formula: '(OI.c − OI.o) / OI.o', values: oi ? `(${f(oi.c, 0)} − ${f(oi.o, 0)}) / ${f(oi.o, 0)}` : '', result: pct(c.dOIPct), text: 'Nőtt vagy csökkent a nyitott pozíciók értéke.' },
     { group: 'Open interest', name: 'Kvadráns', formula: 'ár iránya × OI iránya (holtsávval)', values: '', result: c.oiQuadrant, text: QUADRANT_TEXT[c.oiQuadrant] },
-    { group: 'Open interest', name: 'OI jel (oiSignal)', formula: 'kvadráns pont · min(|z(dOI)|, 3) / 3', values: `${QUADRANT_POINTS[c.oiQuadrant]} · min(|${f(si.dOIZ, 2)}|, 3) / 3`, result: f(score.oiSignal, 3), text: 'NEW_LONGS +1, SHORT_COVERING +0,5, NEW_SHORTS −1, LONG_LIQ −0,5, szorozva az OI-változás szokatlanságával.' },
+    { group: 'Open interest', name: 'OI jel (oiSignal)', formula: 'kvadráns pont · min(|z(dOI)|, 3) / 3', values: `${QUADRANT_SCORE[c.oiQuadrant]} · min(|${f(si.dOIZ, 2)}|, 3) / 3`, result: f(score.oiSignal, 3), text: 'NEW_LONGS +1, SHORT_COVERING +0,5, NEW_SHORTS −1, LONG_LIQ −0,5, szorozva az OI-változás szokatlanságával.' },
 
     { group: 'Likvidáció / funding', name: 'Likvidáció z', formula: 'z((long+short likvidáció) / forgalom USD)', values: '', result: f(c.liqZ, 2), text: '>2: kényszerített flow, a delta nem organikus, ezért a jel felére csökken.' },
     { group: 'Likvidáció / funding', name: 'Funding z', formula: 'z(funding)', values: '', result: f(c.fundingZ, 2), text: 'Zsúfoltság: erősen pozitív = túl sok long (nem irányjel).' },
