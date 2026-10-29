@@ -1,8 +1,8 @@
 import React from 'react';
 import { num } from '../../utils/format';
 
-// Vételi / eladási arány gyűrű. buy és sell azonos egységben (SOL).
-export default function Donut({ buy, sell }) {
+// Vételi / eladási arány gyűrű. buy és sell azonos egységben (unit: SOL vagy USD).
+export default function Donut({ buy, sell, unit = 'SOL' }) {
   const total = buy + sell;
   const r = 54;
   const circ = 2 * Math.PI * r;
@@ -19,8 +19,8 @@ export default function Donut({ buy, sell }) {
         <text x="70" y="86" textAnchor="middle" className="tick">vétel</text>
       </svg>
       <div className="legend">
-        <span><i style={{ background: 'var(--pos)' }} />Vételi {num(buy, 0)} SOL</span>
-        <span><i style={{ background: 'var(--neg)' }} />Eladási {num(sell, 0)} SOL</span>
+        <span><i style={{ background: 'var(--pos)' }} />Vételi {num(buy, 0)} {unit}</span>
+        <span><i style={{ background: 'var(--neg)' }} />Eladási {num(sell, 0)} {unit}</span>
       </div>
     </div>
   );

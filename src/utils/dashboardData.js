@@ -42,12 +42,16 @@ export const buildRows = (d, snapshots = []) => {
     .reverse();
 };
 
+// A volumen egysége: a snapshot szerinti USD, különben a bázis asset (pl. SOL).
+export const volumeLabel = (snap) => (snap?.volumeUnit === 'USD' ? 'USD' : snap?.asset ?? 'SOL');
+
 export const LABELS = {
   STRONG_BULL: { name: 'Erős emelkedés', tone: 'pos' },
   BULL: { name: 'Emelkedés', tone: 'pos' },
   NEUTRAL: { name: 'Semleges', tone: 'neutral' },
   BEAR: { name: 'Esés', tone: 'neg' },
   STRONG_BEAR: { name: 'Erős esés', tone: 'neg' },
+  INVALID: { name: 'Hiányzó adat', tone: 'neutral' },
 };
 
 export const WATERFALL_LABELS = {
@@ -59,6 +63,7 @@ export const WATERFALL_LABELS = {
 };
 
 export const verdictText = (snap, quadrantText) => {
+  if (snap.momentum === null) return `Hiányzó adat (${snap.missing.join(', ')}) miatt nincs értelmezhető jel.`;
   const { orderFlow } = snap.debug.score;
   const flow = orderFlow < 0 ? 'Az eladói agresszió dominál' : 'A vevői agresszió dominál';
   return `${flow}. ${quadrantText ? quadrantText.charAt(0).toUpperCase() + quadrantText.slice(1) : ''}.`;
@@ -82,7 +87,7 @@ export const buildSignals = (snap) => {
   list.push({
     tone: c.liqZ > 2 ? 'neg' : 'neutral',
     title: `Likvidáció z ${sgn(c.liqZ)}`,
-    text: c.liqZ > 2 ? 'Kényszerített flow: a pontszám felére csökken.' : 'Nincs extrém kényszerzárás, a mozgás organikus.',
+    text: c.liqZ > 2 ? 'Kényszerített flow: az order-flow tag felére csökken.' : 'Nincs extrém kényszerzárás, a mozgás organikus.',
   });
   list.push({
     tone: 'neutral',

@@ -57,7 +57,7 @@ Jelölés: `c` = egy OHLCV gyertya.
 
 > **Validálandó feltételezés:** a doksi csak a mezőneveket adja meg. Feltételezés: `bv` = taker buy volume, `tx` = kötésszám, `btx` = vételi kötésszám. Első futáskor ellenőrizni: `0 <= bv <= v` és `0 <= btx <= tx` minden gyertyán. Ha nem teljesül, logolni és jelezni, ne számoljon tovább vakon.
 
-> **Volumen egysége:** nem dokumentált, hogy base (SOL) vagy quote (USD). Tőzsdék közötti összeadás előtt normalizálni kell USD-re. Ellenőrzés: `v × c` nagyságrendje stimmel-e a tőzsde ismert forgalmával; ha base-ben van, `vUsd = v × c`. A `oi_lq_vol_denominated_in` mező a future-markets listában segít eldönteni.
+> **Volumen egysége:** piaconként a `GET /future-markets` (és `/spot-markets`) listában az `oi_lq_vol_denominated_in` mező adja meg (`BASE` vagy `USD`). Ha `BASE`, `vUsd = v × c`; ha `USD`, `v` már USD. Ismeretlen vagy hiányzó érték esetén a számítás BASE-nek veszi, és figyelmeztetést ad. A kijelzett egység (SOL vagy USD) a piac tényleges egységéből származik.
 
 ### 3.1 Order flow (OHLCV)
 ```
@@ -83,7 +83,9 @@ absorption = |zscore(deltaPct)| > 2  ÉS  |gyertya ármozgás %| < az ablak medi
 
 ### 3.3 Open interest + ár kvadráns
 ```
-dOI%    = (oi.c - oi.o) / oi.o     // gyertyán belül, vagy N gyertyára
+dOI%    = Σ_m w_m · (noi.c - noi.o) / noi.o / Σ_m w_m   // noi = natív OI (pozíciómennyiség), w_m = USD-OI súly
+// Az USD-OI ár-torzított (az árfolyam is változtatja), ezért a dOI-hoz natív OI kell.
+// Ha egy piachoz nincs natív pont, a dOI null (nem számolunk USD-OI-ból csendben).
 dPrice% = (c.c - c.o) / c.o
 ```
 | dPrice | dOI | Címke | Momentum hatás |
@@ -100,7 +102,7 @@ Holtsáv: ha |dOI%| vagy |dPrice%| a saját rolling szórásának 0.25-szöröse
 netLiq    = s - l        // + = shortokat likvidáltak (felfelé nyom), − = longokat
 liqRatio  = (l + s) / vUsd   // mekkora része a forgalomnak kényszerített
 ```
-Ha `liqRatio` magas (zscore > 2), az aznapi delta nem organikus → a kompozitban csökkenteni kell a delta súlyát (lásd 5. pont).
+Ha `liqRatio` magas (zscore > 2), az aznapi delta nem organikus → a kompozitban csak az order-flow tag súlyát csökkentjük (lásd 5. pont). Hiányzó likvidációs pont esetén `liqRatio` és `liqZ` null, a pontszám érvénytelen.
 
 ### 3.5 Funding (zsúfoltság, nem irány)
 ```
@@ -125,6 +127,8 @@ Kontrariánus jelzés, csak szűrőként.
 - **Funding:** OI-val súlyozott átlag a perp piacokon.
 - **L/S arány:** OI-val súlyozott átlag ott, ahol van.
 - Hiányzó gyertya egy piacon → az adott időpontban az a piac kimarad, de legyen egy `coverage` mező (hány piac adott adatot).
+- **Hiányzó adat nem nulla.** Ha egy konfigurált forrás (spot, OI, funding, likvidáció) hiányzik egy időpontban, a spot/OI/funding/likvidáció értéke `null`, és a pontszám érvénytelen (`momentum: null`, `label: INVALID`). Ha egy forrás egyáltalán nincs konfigurálva, a tagja kimarad és figyelmeztetés jelzi.
+- `coverage` külön jelzi, hány perp piachoz érkezett ténylegesen OI, funding és likvidációs adat, valamint hogy az adat teljes-e (`complete`).
 
 ### Spot vs perp vezetés
 ```
@@ -143,10 +147,10 @@ Minden komponens rolling z-score (alap ablak: 50 gyertya), majd [-3, +3]-ra vág
 orderFlow = 0.6 * z(deltaPct_perp+spot) + 0.4 * z(cvdSlope)
 oiSignal  = kvadráns alapján: NEW_LONGS:+1, SHORT_COVERING:+0.5, NEW_SHORTS:-1, LONG_LIQUIDATION:-0.5, NEUTRAL:0
             szorozva min(|z(dOI%)|, 3) / 3
-liqDamp   = liqZ > 2 ? 0.5 : 1                    // kényszerített flow csillapítás
+liqDamp   = liqZ > 2 ? 0.5 : 1                    // kényszerített flow csillapítás: CSAK az order-flow tagra
 crowding  = fundingZ                              // + = túlzsúfolt long
 
-momentumRaw = liqDamp * (w1*orderFlow + w2*oiSignal*3 + w3*spotLead)
+momentumRaw = w1*liqDamp*orderFlow + w2*oiSignal*3 + w3*spotLead
             - w4 * sign(momentumRawElőjel) * max(0, crowding*sign(momentumRawElőjel) - 1)
 ```
 Kezdő súlyok: `w1 = 0.5, w2 = 0.25, w3 = 0.15, w4 = 0.10`.
@@ -199,6 +203,7 @@ Plusz a teljes idősor (`MomentumSnapshot[]`), hogy a dashboard grafikont tudjon
 ## 7. Időkeretek
 
 - Egyetlen időkeret: `1hour`. Minden számítás (OHLCV, OI, funding, likvidáció, long/short ratio, spot) ebből készül.
+Csak a lezárt gyertyák számítanak: a még formálódó utolsó gyertya (`t + 3600 > now`) kimarad, így nem változtatja a momentumot.
 - Az ablakok gyertyaszámban értendők, tehát 1 gyertya = 1 óra (pl. z-score ablak 50 óra).
 - Később: `daily` (ez nem törlődik, hosszabb trendhez)
 

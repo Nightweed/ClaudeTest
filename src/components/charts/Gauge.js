@@ -10,6 +10,7 @@ const ZONES = [
 
 // −1…+1 közötti momentum pontszám félkör-műszere.
 export default function Gauge({ value }) {
+  if (!Number.isFinite(value)) return <p className="sub">Nincs érvényes momentum (hiányzó adat).</p>;
   const cx = 130;
   const cy = 120;
   const r = 96;

@@ -3,11 +3,12 @@ import { Card, Section } from './ui';
 import Hero from './Hero';
 import { TimeChart, CandleChart, Donut, Waterfall, ContribBars } from './charts';
 import { scoreWaterfall } from '../utils/waterfall';
-import { WATERFALL_LABELS, buildSignals } from '../utils/dashboardData';
+import { WATERFALL_LABELS, buildSignals, volumeLabel } from '../utils/dashboardData';
 import { compact, num, sgn, pct } from '../utils/format';
 
 export default function OverviewTab({ last, lastRow, view, snapView, explanation }) {
   const quadrantText = explanation.find((r) => r.name === 'Kvadráns')?.text;
+  const unit = volumeLabel(last);
   return (
     <>
       <Hero last={last} quadrantText={quadrantText} />
@@ -16,16 +17,16 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
         <div className="grid g-1-2">
           <Card>
             <h3>Vételi / eladási volumen</h3>
-            <p className="sub">Az utolsó gyertya perp forgalma SOL-ban.</p>
-            <Donut buy={lastRow.buyVol} sell={lastRow.volume - lastRow.buyVol} />
+            <p className="sub">Az utolsó gyertya perp forgalma, {unit}-ban.</p>
+            <Donut buy={lastRow.buyVol} sell={lastRow.volume - lastRow.buyVol} unit={unit} />
             <p className="note">
-              Delta (perp): <b>{sgn(lastRow.delta, 2)} SOL</b>, ez a forgalom <b>{pct(lastRow.deltaPct, 2)}</b>-a. A pontszám a perp és a spot együttes (kombinált) delta %-ából számol, ezért az érték eltérhet.
+              Delta (perp): <b>{sgn(lastRow.delta, 2)} {unit}</b>, ez a forgalom <b>{pct(lastRow.deltaPct, 2)}</b>-a. A pontszám a perp és a spot együttes (kombinált) delta %-ából számol, ezért az érték eltérhet.
             </p>
           </Card>
           <Card>
             <h3>Delta gyertyánként</h3>
-            <p className="sub">Vételi mínusz eladási agresszió, perp, SOL. Kék: a vevők nyomnak, piros: az eladók.</p>
-            <TimeChart times={view.map((r) => r.t)} series={[{ name: 'Delta', values: view.map((r) => r.delta) }]} bars tipFmt={(v) => `${num(v, 0)} SOL`} />
+            <p className="sub">Vételi mínusz eladási agresszió, perp, {unit}. Kék: a vevők nyomnak, piros: az eladók.</p>
+            <TimeChart times={view.map((r) => r.t)} series={[{ name: 'Delta', values: view.map((r) => r.delta) }]} bars tipFmt={(v) => `${num(v, 0)} ${unit}`} />
           </Card>
         </div>
         <Card className="mt">
@@ -42,9 +43,13 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
 
       <Section n="02" title="Így áll össze a pontszám" sub="A nyers pontszám tagjai. A momentum ennek a harmada, −1 és +1 közé vágva.">
         <Card>
-          <Waterfall items={scoreWaterfall(last.debug.score, last.debug.scoreInput, last.debug.weights).map((t) => ({ label: WATERFALL_LABELS[t.key], value: t.value }))} />
+          {last.valid ? (
+            <Waterfall items={scoreWaterfall(last.debug.score, last.debug.scoreInput, last.debug.weights).map((t) => ({ label: WATERFALL_LABELS[t.key], value: t.value }))} />
+          ) : (
+            <p className="sub">Az utolsó gyertyánál hiányzik adat ({last.missing.join(', ')}), ezért nincs pontszám.</p>
+          )}
           <p className="note">
-            Nyers pontszám <b>{sgn(last.debug.score.raw, 3)}</b> ÷ 3 = <b>{sgn(last.momentum, 3)}</b>. A likvidációs oszlop csak akkor nem nulla, ha a likvidáció z-score 2 felett van; a crowding csak akkor, ha a funding ugyanabba az irányba zsúfolt.
+            Nyers pontszám <b>{sgn(last.debug.score.raw, 3)}</b> ÷ 3 = <b>{sgn(last.momentum, 3)}</b>. A likvidációs oszlop csak akkor nem nulla, ha a likvidáció z-score 2 felett van, és ekkor csak az order-flow tagot csökkenti; a crowding csak akkor, ha a funding ugyanabba az irányba zsúfolt.
           </p>
         </Card>
       </Section>
