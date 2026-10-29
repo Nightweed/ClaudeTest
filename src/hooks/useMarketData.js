@@ -100,11 +100,8 @@ export function useMarketData() {
         spots,
         interval,
       }));
-      // Ahol nincs egység, a számítás BASE-nek veszi; ezt jelezzük.
-      const unitWarnings = [
-        ...(perpUnit ? [] : [`${symbol}: ismeretlen volumenegység, BASE-nek vesszük`]),
-        ...spots.filter((s) => !s.volumeUnit).map((s) => `${s.symbol}: ismeretlen volumenegység, BASE-nek vesszük`),
-      ];
+      // Ha a perp piac egysége ismeretlen, a számítás BASE-nek veszi; ezt jelezzük. (A spotoknál a BASE a várt alapérték, nincs rá figyelmeztetés.)
+      const unitWarnings = perpUnit ? [] : [`${symbol}: ismeretlen volumenegység, BASE-nek vesszük`];
       warnings = [...unitWarnings, ...warnings];
     }
     setRows(buildRows(data, snapshots));
