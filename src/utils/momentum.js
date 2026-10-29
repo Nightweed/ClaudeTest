@@ -345,10 +345,6 @@ export const computeMomentum = ({
   const warnings = [];
   const nowSec = now / 1000;
   const intervalSec = INTERVAL_SECONDS[interval] ?? 3600;
-  const countOf = (m) => (Array.isArray(m.ohlcv) ? m.ohlcv.length : 0);
-  if ([...perps, ...spots].some((m) => dropUnfinished(m.ohlcv, nowSec, intervalSec).length !== countOf(m))) {
-    warnings.push('befejezetlen (még formálódó) gyertya kihagyva');
-  }
   const closed = (m) => ({ ...m, ohlcv: dropUnfinished(m.ohlcv, nowSec, intervalSec) });
 
   const P = perps

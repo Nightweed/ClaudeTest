@@ -338,12 +338,12 @@ describe('befejezetlen gyertya (2.)', () => {
     expect(dropUnfinished(rows, 10800, 3600)).toEqual(rows);
   });
 
-  test('a formálódó utolsó gyertya kimarad és warning jelzi', () => {
+  test('a formálódó utolsó gyertya kimarad figyelmeztetés nélkül', () => {
     const m = hourly(10);
     const { snapshots, warnings } = computeMomentum({ perps: [m], now: (3600 * 10 + 1000) * 1000 });
     expect(snapshots).toHaveLength(9);
     expect(snapshots[8].t).toBe(3600 * 9);
-    expect(warnings).toContain('befejezetlen (még formálódó) gyertya kihagyva');
+    expect(warnings).not.toContain('befejezetlen (még formálódó) gyertya kihagyva');
   });
 
   test('a formálódó gyertya nem változtatja a korábbi momentumot', () => {
