@@ -1,0 +1,2 @@
+# A repo LF sorvégeket tárol; a Windows-os core.autocrlf ne írjon CRLF-et.
+* text=auto eol=lf
