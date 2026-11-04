@@ -29,6 +29,13 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
 
 ## Állapot
 
-**1. szakasz – részben kész (2026-10-30).** A 80 SOL-os eltérés nem kódhiba. A nyers Coinalyze-adat (`SOLUSDT_PERP.A`, 1h, UTC 08:00 = 09:00 CET): `v` = 564 307,18 (nem 564 387,18; elírás volt), `bv` = 275 625,54, eladási volumen 288 681,64, delta −13 056,10, delta % −2,314%. Az alkalmazás értékei helyesek.
+**1. szakasz – kész (2026-11-04).**
 
-Hátra: automatikus validációs réteg (`validateCandles` mellé) tesztekkel; spot és USD-értékek ellenőrzése nyers adaton. Utána a 2. szakasz.
+- **Eltérés vizsgálata (2026-10-30):** a 80 SOL-os eltérés nem kódhiba. A nyers Coinalyze-adat (`SOLUSDT_PERP.A`, 1h, UTC 08:00 = 09:00 CET): `v` = 564 307,18 (nem 564 387,18; elírás volt), `bv` = 275 625,54, eladási volumen 288 681,64, delta −13 056,10, delta % −2,314%. Az alkalmazás értékei helyesek.
+- **Automatikus validáció:** `validateCandles` (`src/utils/momentum.js`) a `prepareMarket`-ben fut; a hibás piac kimarad és figyelmeztetést ad. A `momentum.test.js` 9 validációs tesztet tartalmaz; a teljes csomag 48/48 zöld.
+- **Spot és USD ellenőrzés nyers adaton (2026-11-04, az utolsó 6 órás 1h gyertyák):**
+  - A SOL/USD, SOL/USDC és SOL/USDT (F) spot piacok `v` mezője a bázis asset (SOL) egységében érkezik. Erre utal, hogy a `v × c` a SOLUSD.A-nál ~4–6,5 M USD/óra, ami a SOL-egységgel konzisztens, míg USD-egységként néhány száz SOL/óra lenne, ami egy nagy spot pairnél irreális.
+  - Minden vizsgált gyertyán teljesül: `bv ≤ v`, `btx ≤ tx`, és a számítás `sell = v − bv` definíció szerint adja az eladási oldalt.
+  - Nyitott megjegyzés: a spot piacoknak nincs `oi_lq_vol_denominated_in` mezőjük, ezért a kód BASE-t feltételez. A feltevés a mérésekkel konzisztens, de közvetlen megerősítés (spot OHLCV USD-ben lekérve) még hiányzik.
+
+Utána jöhet a 2. szakasz (Z-score).
