@@ -46,7 +46,7 @@ export const buildExplanation = (snap, candle, oi) => {
     { group: 'Order flow', name: 'Méret-ferdeség', formula: 'átl. vételi méret / átl. eladási méret', values: '', result: f(c.sizeSkew, 2), text: '>1: a vételi oldalon nagyobbak a kötések (nagyobb szereplők vesznek).' },
 
     { group: 'Divergencia', name: 'Ár vs CVD divergencia', formula: 'sign(ár meredekség) ≠ sign(CVD meredekség), holtsávval', values: '', result: c.divergence || 'nincs', text: 'BULLISH: az ár esik, de a CVD emelkedik. BEARISH: az ár emelkedik, de a CVD esik. A holtsávon belüli meredekség nem ad irányt.' },
-    { group: 'Divergencia', name: 'Abszorpció', formula: '|nyers delta z| > 2 (vágatlan, nem a ±3-ra vágott) és kicsi ármozgás, legalább 20 korábbi gyertya', values: '', result: c.absorption ? 'igen' : 'nem', text: 'Nagy agresszió, de az ár alig mozdul: valaki felszívja az ordereket.' },
+    { group: 'Divergencia', name: 'Abszorpció', formula: '|nyers delta z| > 2 (vágatlan, nem a ±3-ra vágott) és kicsi ármozgás, legalább 20 korábbi gyertya', values: '', result: c.absorptionSide === 'BUY' ? 'vételi (a vételeket felszívják)' : c.absorptionSide === 'SELL' ? 'eladási (az eladásokat felszívják)' : 'nem', text: 'Nagy agresszió, de az ár alig mozdul: valaki felszívja az ordereket. Megfigyelés, nem fordulójel: önmagában nem mond irányt.' },
 
     { group: 'Open interest', name: 'Ármozgás', formula: '(c − o) / o', values: `(${f(candle.c)} − ${f(candle.o)}) / ${f(candle.o)}`, result: pct(dPrice), text: 'A gyertya ármozgása.' },
     { group: 'Open interest', name: 'OI változás', formula: 'súlyozott Σ (natív OI.c − natív OI.o) / natív OI.o', values: '', result: pct(c.dOIPct), text: 'A pozíciómennyiség változása piacok szerint, USD-OI súllyal. Az árfolyam nem torzítja.' },

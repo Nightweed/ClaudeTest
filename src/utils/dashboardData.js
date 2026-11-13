@@ -82,7 +82,7 @@ export const buildSignals = (snap) => {
   list.push({
     tone: c.divergence ? 'neg' : 'neutral',
     title: c.divergence ? `Divergencia: ${c.divergence}` : 'Nincs divergencia',
-    text: c.absorption ? 'Abszorpció: nagy agresszió, de az ár alig mozdul.' : 'Az ár és a CVD iránya nem mond ellent egymásnak, abszorpció sincs.',
+    text: c.absorption ? `${c.absorptionSide === 'BUY' ? 'Vételi' : 'Eladási'} abszorpció: nagy agresszió, de az ár alig mozdul (megfigyelés, nem fordulójel).` : 'Az ár és a CVD iránya nem mond ellent egymásnak, abszorpció sincs.',
   });
   list.push({
     tone: c.liqZ > 2 ? 'neg' : 'neutral',

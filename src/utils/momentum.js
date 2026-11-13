@@ -163,9 +163,17 @@ export const detectDivergence = (closes, cvds, deltas, cfg = CONFIG) => {
   return { divergence, priceSlope, cvdSlope };
 };
 
+// Abszorpció oldala: 'BUY' = nagy vételi agresszió (delta z > küszöb), de az ár alig mozdul, vagyis a
+// vételeket valaki felszívja (passzív eladó); 'SELL' = nagy eladási agresszió, az ár alig mozdul (passzív
+// vevő). Ez megfigyelés, nem fordulójel: önmagában nem mond irányt. A delta z a nyers (vágatlan) érték.
+export const detectAbsorptionSide = (deltaPctZ, movePct, recentMovesPct, absorptionZ = CONFIG.absorptionZ) => {
+  if (!(Math.abs(deltaPctZ) > absorptionZ)) return null;
+  if (!(Math.abs(movePct) < median(recentMovesPct.map(Math.abs)) / 2)) return null;
+  return deltaPctZ > 0 ? 'BUY' : 'SELL';
+};
+
 export const detectAbsorption = (deltaPctZ, movePct, recentMovesPct, absorptionZ = CONFIG.absorptionZ) =>
-  Math.abs(deltaPctZ) > absorptionZ &&
-  Math.abs(movePct) < median(recentMovesPct.map(Math.abs)) / 2;
+  detectAbsorptionSide(deltaPctZ, movePct, recentMovesPct, absorptionZ) !== null;
 
 // ---------- 3.3 OI + ár kvadráns ----------
 
@@ -451,6 +459,11 @@ export const computeMomentum = ({
           )
         : { divergence: null };
 
+    const absorptionSide =
+      prevWin.length >= cfg.absorptionWarmup
+        ? detectAbsorptionSide(deltaPctZ[i] ?? 0, a.movePct, prevWin.map((x) => x.movePct), cfg.absorptionZ)
+        : null;
+
     const oiQuadrant = isNum(a.dOI)
       ? getOIQuadrant(
           a.movePct,
@@ -514,9 +527,8 @@ export const computeMomentum = ({
         cvdSlopeNorm: slopeNorm[i],
         cvdSlopeZ: zn(slopeZ[i]),
         divergence: div.divergence,
-        absorption:
-          prevWin.length >= cfg.absorptionWarmup &&
-          detectAbsorption(deltaPctZ[i] ?? 0, a.movePct, prevWin.map((x) => x.movePct), cfg.absorptionZ),
+        absorption: absorptionSide !== null,
+        absorptionSide, // 'BUY' | 'SELL' | null
         oiQuadrant,
         dOIPct: a.dOI,
         netLiqUsd: a.netLiqUsd,

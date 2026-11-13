@@ -10,6 +10,7 @@ import {
   detectDivergence,
   calculateCvdSlopeNorm,
   detectAbsorption,
+  detectAbsorptionSide,
   getOIQuadrant,
   getLabel,
   calculateMomentumScore,
@@ -176,6 +177,16 @@ describe('divergencia / abszorpció (3.2)', () => {
     expect(detectAbsorption(2.5, 0.0001, [0.01, 0.01, 0.01])).toBe(true);
     expect(detectAbsorption(2.5, 0.01, [0.01, 0.01, 0.01])).toBe(false);
     expect(detectAbsorption(1, 0.0001, [0.01, 0.01])).toBe(false);
+  });
+
+  test('abszorpció oldala: vételi és eladási külön, a bool változatlan', () => {
+    const recent = [0.01, 0.01, 0.01];
+    expect(detectAbsorptionSide(2.5, 0.0001, recent)).toBe('BUY');
+    expect(detectAbsorptionSide(-2.5, 0.0001, recent)).toBe('SELL');
+    expect(detectAbsorptionSide(2.5, 0.01, recent)).toBeNull(); // az ár mozdul
+    expect(detectAbsorptionSide(1, 0.0001, recent)).toBeNull(); // nincs elég agresszió
+    expect(detectAbsorptionSide(2, 0.0001, recent)).toBeNull(); // pontosan a küszöbön nem elég
+    expect(detectAbsorption(-2.5, 0.0001, recent)).toBe(true);
   });
 });
 

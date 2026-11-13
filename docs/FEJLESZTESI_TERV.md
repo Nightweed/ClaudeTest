@@ -19,7 +19,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 - A magyarázó nézet és a kijelzések egy része egyetlen piac gyertyájából, más része az összes perp USD-ben összegzett értékéből számol; a végső tesztnél érdemes egységesen jelölni, melyik melyik. A spot delta kijelzett egysége ("B"?) és a pontszám-összegzés (waterfall) ellenőrizendő.
 - ~~A CVD meredekség z-score képlete nincs definiálva~~ → definiálva (2026-11-13): `calculateCvdSlopeNorm` = CVD regressziós meredekség / átl. |delta| (20 gyertya), arra 50 gyertyás z; a CVD abszolút értéke ablakfüggő, a normalizált meredekség nem. Tesztelve.
 - Az OI holtsáv numerikus küszöbei hiányoznak a dokumentációból.
-- Az abszorpció nem különíti el a vételi és eladási oldalt.
+- ~~Az abszorpció nem különíti el a vételi és eladási oldalt~~ → megoldva (2026-11-13): `detectAbsorptionSide` ('BUY'/'SELL'/null), `components.absorptionSide`; a `absorption` bool megmaradt; megfigyelés, nem fordulójel.
 - A likvidáció z-score előjele nem mutatja a long/short irányt.
 - A CVD abszolút értéke függ a számítási ablaktól (kijelzésnél jelezve; az irányt a normalizált meredekség adja).
 - A USD-konverzió `delta × záróár` közelítés (2026-11-13 döntés: marad, dokumentálva a kódban és az `explain.js`-ben); a pontos érték a gyertya átlagára lenne, az API nem ad VWAP-ot. Netes keresés nem talált előíró forrást. Ha később érdemes, tipikus árral `(h+l+c)/3` összevethető. A Coinalyze doksi `v`/`bv` egységleírása nem volt elérhető (az oldal kliensoldali).
