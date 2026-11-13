@@ -191,6 +191,19 @@ export const QUADRANT_SCORE = {
   NEUTRAL: 0,
 };
 
+// ---------- likvidáció ----------
+
+// Likvidáció iránya: a domináns oldal. 'LONG' = több long pozíciót zártak ki (kényszereladás, esés),
+// 'SHORT' = több shortot (kényszervétel, short squeeze). Hiányzó adatnál vagy egyenlőségnél null.
+// Az intenzitás (liqZ) iránytalan: az (összes likvidáció / forgalom) szokatlanságát méri, ezért az irányt
+// ez a külön mutató adja.
+export const liqDirection = (liqLong, liqShort) => {
+  if (!isNum(liqLong) || !isNum(liqShort)) return null;
+  if (liqLong > liqShort) return 'LONG';
+  if (liqShort > liqLong) return 'SHORT';
+  return null;
+};
+
 // ---------- 5. kompozit momentum ----------
 
 export const getLabel = (m) => {
@@ -531,7 +544,10 @@ export const computeMomentum = ({
         absorptionSide, // 'BUY' | 'SELL' | null
         oiQuadrant,
         dOIPct: a.dOI,
-        netLiqUsd: a.netLiqUsd,
+        netLiqUsd: a.netLiqUsd, // short − long likvidáció, USD (pozitív: a shortokat zárták ki többet)
+        liqLongUsd: a.liqL,
+        liqShortUsd: a.liqS,
+        liqDirection: liqDirection(a.liqL, a.liqS), // irány; a liqZ csak intenzitás
         liqZ: liqZ[i],
         fundingZ: zn(fundingZ[i]),
         predFundingZ: zn(predZ[i]),

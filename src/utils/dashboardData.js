@@ -87,7 +87,7 @@ export const buildSignals = (snap) => {
   list.push({
     tone: c.liqZ > 2 ? 'neg' : 'neutral',
     title: `Likvidáció z ${sgn(c.liqZ)}`,
-    text: c.liqZ > 2 ? 'Kényszerített flow: az order-flow tag felére csökken.' : 'Nincs extrém kényszerzárás, a mozgás organikus.',
+    text: c.liqZ > 2 ? `Kényszerített flow${c.liqDirection === 'LONG' ? ' (long likvidáció dominál)' : c.liqDirection === 'SHORT' ? ' (short likvidáció dominál)' : ''}: az order-flow tag felére csökken.` : 'Nincs extrém kényszerzárás, a mozgás organikus.',
   });
   list.push({
     tone: 'neutral',

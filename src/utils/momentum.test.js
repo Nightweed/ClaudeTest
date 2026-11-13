@@ -12,6 +12,7 @@ import {
   detectAbsorption,
   detectAbsorptionSide,
   getOIQuadrant,
+  liqDirection,
   QUADRANT_SCORE,
   getLabel,
   calculateMomentumScore,
@@ -289,6 +290,34 @@ describe('OI kvadráns (3.3)', () => {
     expect(lastQuadrant({ lastMove: -0.02, lastOiPct: 0.02 })).toBe('NEW_SHORTS');
     expect(lastQuadrant({ lastMove: 0.02, lastOiPct: -0.02 })).toBe('SHORT_COVERING');
     expect(lastQuadrant({ lastMove: -0.02, lastOiPct: -0.02 })).toBe('LONG_LIQUIDATION');
+  });
+});
+
+describe('likvidáció: irány és intenzitás külön', () => {
+  test('liqDirection: domináns oldal, egyenlőségnél és hiányzó adatnál null', () => {
+    expect(liqDirection(100, 10)).toBe('LONG');
+    expect(liqDirection(10, 100)).toBe('SHORT');
+    expect(liqDirection(50, 50)).toBeNull();
+    expect(liqDirection(null, 10)).toBeNull();
+    expect(liqDirection(10, undefined)).toBeNull();
+  });
+
+  test('a z-score iránytalan: felcserélt long/short ugyanazt az intenzitást, ellentétes irányt ad', () => {
+    const build = (l, s) => {
+      const m = makeMarket('A', 60, { oiBase: 5000 });
+      m.liq[59] = { t: m.liq[59].t, l, s };
+      return computeMomentum({ perps: [m] }).snapshots[59].components;
+    };
+    const longHeavy = build(1000, 10);
+    const shortHeavy = build(10, 1000);
+    expect(longHeavy.liqZ).toBeGreaterThan(2);
+    expect(longHeavy.liqZ).toBeCloseTo(shortHeavy.liqZ, 10);
+    expect(longHeavy.liqDirection).toBe('LONG');
+    expect(shortHeavy.liqDirection).toBe('SHORT');
+    expect(longHeavy.netLiqUsd).toBe(10 - 1000); // short − long
+    expect(shortHeavy.netLiqUsd).toBe(1000 - 10);
+    expect(longHeavy.liqLongUsd).toBe(1000);
+    expect(longHeavy.liqShortUsd).toBe(10);
   });
 });
 
