@@ -37,3 +37,5 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
 ## Ötletek (a fix-terv után)
 
 - **Nettó inflow/outflow adatok megjelenítése** (felhasználó kérése, 2026-11-13). Nem része a 7 szakasznak; adatforrás még eldöntetlen (Coinalyze delta/CVD alapú nettó pénzáramlás vs. külső tőzsde in/outflow). Először forrás és képlet tisztázása, utána kijelzés.
+
+- **7. szakasz, 1. rész – kiértékelő modul (2026-11-13).** `src/utils/backtest.js` (tiszta függvények, 16 új teszt, összesen 88 zöld): `runBacktest` (1/3/6/12 órás előretekintés, találati arány, átlagos hozam, MFE/MAE, long/short és címkénkénti bontás, alapvonal: minden gyertyán long), `evaluateSignal` (oda-vissza díj bps-ben, funding: long fizet pozitív rátánál), `correlationMatrix` (dupla beszámítás), `informationCoefficient`. Belépés a jel gyertyájának zárásán; a MFE/MAE záróárakból számolt (alulbecsli a gyertyán belüli kilengést). Még NINCS valós adaton futtatva; nincs paraméterhangolás. Következő: futtató szkript valós Coinalyze-adattal (a lekérhető history hossza korlátozza a mintát).
