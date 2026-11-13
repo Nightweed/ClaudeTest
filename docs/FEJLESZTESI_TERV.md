@@ -33,3 +33,7 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
 
 - **1. szakasz – nyers adat és konzisztencia (2026-11-04).** A 80 SOL-os eltérés nem kódhiba volt (elírás a korábbi ellenőrző oszlopban). `validateCandles` a `prepareMarket`-ben fut, a hibás piac kimarad figyelmeztetéssel; a spot `v` SOL-egységben jön.
 - **2. szakasz (2026-11-13).** Nyers delta z megőrizve (`components.deltaPctZRaw`) és az `explain.js`-ben a vágott mellett látszik; nulla szórás és hiányos ablak tesztelve; az abszorpció a nyers (vágatlan) z-t használja, ez az `explain.js`-ben jelezve van. A z-score matematikai maximuma 50 elemű ablakban √49 = 7.
+
+## Ötletek (a fix-terv után)
+
+- **Nettó inflow/outflow adatok megjelenítése** (felhasználó kérése, 2026-11-13). Nem része a 7 szakasznak; adatforrás még eldöntetlen (Coinalyze delta/CVD alapú nettó pénzáramlás vs. külső tőzsde in/outflow). Először forrás és képlet tisztázása, utána kijelzés.
