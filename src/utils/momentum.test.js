@@ -173,6 +173,24 @@ describe('divergencia / abszorpció (3.2)', () => {
     const closes = [10, 9, 8, 7, 6];
     expect(detectDivergence(closes, [0, 0.001, 0.002, 0.003, 0.004], [1, 1, 1, 1, 1]).divergence).toBeNull();
   });
+  test('divergencia: meredekségek kézzel ellenőrzött értéke', () => {
+    // ár 10,9,8,7,6: meredekség -1, átlag 8 -> -0,125; CVD 0..4 meredekség 1, átl. |delta| 1 -> 1
+    const r = detectDivergence([10, 9, 8, 7, 6], [0, 1, 2, 3, 4], [1, 1, 1, 1, 1]);
+    expect(r.priceSlope).toBeCloseTo(-0.125, 10);
+    expect(r.cvdSlope).toBeCloseTo(1, 10);
+  });
+  test('divergencia: a holtsáv határán (egyenlő a küszöbbel) nincs jel, alatta van', () => {
+    const args = [[10, 9, 8, 7, 6], [0, 1, 2, 3, 4], [1, 1, 1, 1, 1]];
+    expect(detectDivergence(...args, { divMinSlope: { price: 0.125, cvd: 1 } }).divergence).toBeNull();
+    expect(detectDivergence(...args, { divMinSlope: { price: 0.124, cvd: 0.99 } }).divergence).toBe('BULLISH');
+  });
+  test('divergencia: nincs jel, ha a CVD-nek nincs delta (átl. |delta| = 0)', () => {
+    expect(detectDivergence([10, 9, 8, 7, 6], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]).divergence).toBeNull();
+  });
+  test('computeMomentum: divMinWindow alatt (5 < 10 gyertya) nincs divergencia', () => {
+    const { snapshots } = computeMomentum({ perps: [makeMarket('A', 5, { oiBase: 5000 })] });
+    snapshots.forEach((s) => expect(s.components.divergence).toBeNull());
+  });
   test('abszorpció: nagy z, de kicsi ármozgás', () => {
     expect(detectAbsorption(2.5, 0.0001, [0.01, 0.01, 0.01])).toBe(true);
     expect(detectAbsorption(2.5, 0.01, [0.01, 0.01, 0.01])).toBe(false);

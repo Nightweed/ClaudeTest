@@ -8,7 +8,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 2. **Z-score** *(kész, kivéve a 8,31 ellenőrzését, ami a végső tesztelésre marad)*
 3. **CVD** *(kész, 2026-11-13)* – képlet definiálva és tesztelve, USD-konverzió közelítése dokumentálva, abszolút CVD / nyers meredekség (`cvdSlopeUsd`) / normalizált meredekség (`cvdSlopeNorm`) / z (`cvdSlopeZ`) külön mező.
-4. **Divergencia és abszorpció** – ár- és CVD-meredekség, numerikus holtsáv, bullish/bearish szétválasztás; vételi és eladási abszorpció külön indikátor, nem automatikus fordulójel.
+4. **Divergencia és abszorpció** *(kész, 2026-11-13)* – vételi/eladási abszorpció külön (`absorptionSide`); divergencia: bullish/bearish külön, holtsáv (`divMinSlope`: ár 1e-4 relatív meredekség/gyertya, CVD 0,05 átl. |delta|/gyertya; szigorú egyenlőtlenség, a küszöbön nincs jel), legalább 10 gyertya kell; a küszöbök kezdő feltételezések, a 7. szakasz historikus tesztjén kell igazolni. Kézzel ellenőrzött meredekség-értékek és határesetek tesztelve.
 5. **Open Interest** – natív OI, USD-súlyozás, változás, ár- és OI-holtsáv, kvadránsok (új longok / új shortok / short covering / longzárás, holtsávon belül NEUTRAL), pontozás tesztelése.
 6. **Likvidáció és Funding** – long/short/összes likvidáció, likvidáció/forgalom, z-score; irány és intenzitás külön. A funding zsúfoltsági mutató, nem önálló irányjel.
 7. **Integráció és historikus teszt** – indikátorok külön tesztje, korreláció, dupla beszámítás kerülése, 1/3/6/12 órás előretekintés, találati arány, átlagos és maximális kedvezőtlen elmozdulás, költségek és funding. Paramétert nem optimalizálunk, amíg az alapmodellt nem értjük.
