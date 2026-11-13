@@ -6,7 +6,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 ## Hátralévő szakaszok
 
-2. **Z-score** *(folyamatban)* – hátra: a 8,31 eredetének tisztázása; az abszorpció vágatlan z-t használ, ez dokumentálandó vagy egységesítendő.
+2. **Z-score** *(kész, kivéve a 8,31 ellenőrzését, ami a végső tesztelésre marad)*
 3. **CVD** – számítás, USD-konverzió, ablak, 20 gyertyás regresszió, normalizálás, meredekség z-score ablaka; abszolút érték, meredekség és normalizált meredekség külön mutató.
 4. **Divergencia és abszorpció** – ár- és CVD-meredekség, numerikus holtsáv, bullish/bearish szétválasztás; vételi és eladási abszorpció külön indikátor, nem automatikus fordulójel.
 5. **Open Interest** – natív OI, USD-súlyozás, változás, ár- és OI-holtsáv, kvadránsok (új longok / új shortok / short covering / longzárás, holtsávon belül NEUTRAL), pontozás tesztelése.
@@ -15,7 +15,8 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 ## Ismert nyitott problémák
 
-- A delta z-score 8,31 értéke nem származhat ebből a kódból (50 gyertyás ablakban a maximum 7, a kijelzett érték ±3-ra vágott); az eredete tisztázandó.
+- A delta z-score 8,31 értéke nem származhat ebből a kódból (50 gyertyás ablakban a maximum 7, a kijelzett érték ±3-ra vágott); az eredete a végső tesztelésnél tisztázandó (a felhasználó döntése, 2026-11-13). Az elemzés, amiben szerepelt, nem tartalmazza; egy másik gyertya adatait elemzi.
+- A magyarázó nézet és a kijelzések egy része egyetlen piac gyertyájából, más része az összes perp USD-ben összegzett értékéből számol; a végső tesztnél érdemes egységesen jelölni, melyik melyik. A spot delta kijelzett egysége ("B"?) és a pontszám-összegzés (waterfall) ellenőrizendő.
 - A CVD meredekség z-score képlete nincs teljesen definiálva.
 - Az OI holtsáv numerikus küszöbei hiányoznak a dokumentációból.
 - Az abszorpció nem különíti el a vételi és eladási oldalt.
@@ -30,4 +31,4 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
 ## Elkészült
 
 - **1. szakasz – nyers adat és konzisztencia (2026-11-04).** A 80 SOL-os eltérés nem kódhiba volt (elírás a korábbi ellenőrző oszlopban). `validateCandles` a `prepareMarket`-ben fut, a hibás piac kimarad figyelmeztetéssel; a spot `v` SOL-egységben jön.
-- **2. szakasz részben (2026-11-13).** Nyers delta z megőrizve (`components.deltaPctZRaw`) és az `explain.js`-ben a vágott mellett látszik; nulla szórás és hiányos ablak tesztelve. A z-score matematikai maximuma 50 elemű ablakban √49 = 7.
+- **2. szakasz (2026-11-13).** Nyers delta z megőrizve (`components.deltaPctZRaw`) és az `explain.js`-ben a vágott mellett látszik; nulla szórás és hiányos ablak tesztelve; az abszorpció a nyers (vágatlan) z-t használja, ez az `explain.js`-ben jelezve van. A z-score matematikai maximuma 50 elemű ablakban √49 = 7.
