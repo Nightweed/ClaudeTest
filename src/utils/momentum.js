@@ -98,6 +98,10 @@ export const processCandles = (ohlcv, volumeUnit = CONFIG.volumeUnit) => {
     const sellTx = c.tx - c.btx;
     const avgBuySize = c.btx > 0 ? c.bv / c.btx : 0;
     const avgSellSize = sellTx > 0 ? sellVol / sellTx : 0;
+    // USD-konverzió: BASE (SOL) egységnél a záróárral szorzunk. Ez közelítés: a pontos érték a gyertya
+    // átlagára (VWAP) lenne, de az API nem ad ilyet. 1 órás gyertyán az eltérés jellemzően ~1% alatt van,
+    // és a CVD alakját/meredekségét alig érinti (relatív mutatók). Az egység (BASE) a mérésekkel
+    // konzisztens, de közvetlenül nincs megerősítve (lásd docs/FEJLESZTESI_TERV.md).
     const k = volumeUnit === 'BASE' ? c.c : 1;
     return {
       ...c,

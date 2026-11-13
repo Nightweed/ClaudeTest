@@ -21,7 +21,8 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 - Az OI holtsáv numerikus küszöbei hiányoznak a dokumentációból.
 - Az abszorpció nem különíti el a vételi és eladási oldalt.
 - A likvidáció z-score előjele nem mutatja a long/short irányt.
-- A CVD abszolút értéke függ a számítási ablaktól.
+- A CVD abszolút értéke függ a számítási ablaktól (kijelzésnél jelezve; az irányt a normalizált meredekség adja).
+- A USD-konverzió `delta × záróár` közelítés (2026-11-13 döntés: marad, dokumentálva a kódban és az `explain.js`-ben); a pontos érték a gyertya átlagára lenne, az API nem ad VWAP-ot. Netes keresés nem talált előíró forrást. Ha később érdemes, tipikus árral `(h+l+c)/3` összevethető. A Coinalyze doksi `v`/`bv` egységleírása nem volt elérhető (az oldal kliensoldali).
 - A spot piacok USD-egysége közvetlenül nincs megerősítve (spot OHLCV USD-ben lekérve); a mérések a BASE (SOL) feltevéssel konzisztensek.
 
 ## Munkaszabályok

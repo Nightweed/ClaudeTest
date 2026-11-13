@@ -43,6 +43,12 @@ describe('order flow (3.1)', () => {
     const [u] = processCandles([{ t: 1, o: 10, h: 10, l: 10, c: 10, v: 100, bv: 60, tx: 10, btx: 4 }], 'USD');
     expect(u.deltaUsd).toBe(20);
   });
+
+  test('USD-konverzió a záróárral történik (nem a nyitóárral)', () => {
+    const [r] = processCandles([{ t: 1, o: 8, h: 12, l: 8, c: 10, v: 100, bv: 60, tx: 10, btx: 4 }], 'BASE');
+    expect(r.deltaUsd).toBe(20 * 10); // delta 20 SOL × záróár 10, nem × nyitóár 8
+    expect(r.vUsd).toBe(100 * 10);
+  });
 });
 
 describe('statisztika', () => {
