@@ -7,7 +7,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 ## Hátralévő szakaszok
 
 2. **Z-score** *(kész, kivéve a 8,31 ellenőrzését, ami a végső tesztelésre marad)*
-3. **CVD** – számítás, USD-konverzió, ablak, 20 gyertyás regresszió, normalizálás, meredekség z-score ablaka; abszolút érték, meredekség és normalizált meredekség külön mutató.
+3. **CVD** *(kész, 2026-11-13)* – képlet definiálva és tesztelve, USD-konverzió közelítése dokumentálva, abszolút CVD / nyers meredekség (`cvdSlopeUsd`) / normalizált meredekség (`cvdSlopeNorm`) / z (`cvdSlopeZ`) külön mező.
 4. **Divergencia és abszorpció** – ár- és CVD-meredekség, numerikus holtsáv, bullish/bearish szétválasztás; vételi és eladási abszorpció külön indikátor, nem automatikus fordulójel.
 5. **Open Interest** – natív OI, USD-súlyozás, változás, ár- és OI-holtsáv, kvadránsok (új longok / új shortok / short covering / longzárás, holtsávon belül NEUTRAL), pontozás tesztelése.
 6. **Likvidáció és Funding** – long/short/összes likvidáció, likvidáció/forgalom, z-score; irány és intenzitás külön. A funding zsúfoltsági mutató, nem önálló irányjel.

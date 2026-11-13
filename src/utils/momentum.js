@@ -414,6 +414,13 @@ export const computeMomentum = ({
     );
   });
 
+  // Nyers (nem normalizált) meredekség: kombinált CVD regressziós meredeksége, USD / gyertya.
+  const slopeUsd = agg.map((_, i) => {
+    if (i < 2) return 0;
+    const win = agg.slice(Math.max(0, i - N + 1), i + 1);
+    return win.some((a) => a.deltaComb === null) ? null : linearRegression(win.map((a) => a.cvdComb)).slope;
+  });
+
   const Z = cfg.zWindow;
   const deltaPctZ = rollingZ(agg.map((a) => a.deltaPct), Z);
   const slopeZ = rollingZ(slopeNorm, Z);
@@ -501,6 +508,10 @@ export const computeMomentum = ({
         deltaPctZRaw: deltaPctZ[i], // nyers (nem vágott) z-score, csak megjelenítésre/diagnosztikára
         cvdPerp: a.cvdPerp,
         cvdSpot: a.cvdSpot,
+        // Három külön mutató: abszolút CVD (cvdPerp/cvdSpot, ablakfüggő), nyers meredekség (USD/gyertya),
+        // normalizált meredekség (dimenziótlan), és ennek z-score-ja (cvdSlopeZ, a pontszámba ez megy).
+        cvdSlopeUsd: slopeUsd[i],
+        cvdSlopeNorm: slopeNorm[i],
         cvdSlopeZ: zn(slopeZ[i]),
         divergence: div.divergence,
         absorption:

@@ -278,6 +278,23 @@ describe('aggregálás + computeMomentum (4., 6.)', () => {
     expect(snapshots[59].warnings.some((w) => w.includes('z-score ablak'))).toBe(false);
   });
 
+  test('CVD: abszolút, nyers meredekség és normalizált meredekség külön mező', () => {
+    // minden gyertyán ugyanaz a pozitív delta (bv = 80, v = 100 -> delta = 60 SOL), ár ~100
+    const m = makeMarket('A', 30, { oiBase: 5000 });
+    m.ohlcv.forEach((c) => {
+      c.bv = 80;
+    });
+    const { snapshots } = computeMomentum({ perps: [m] });
+    const last = snapshots[29];
+    const { cvdPerp, cvdSlopeUsd, cvdSlopeNorm } = last.components;
+    expect(cvdPerp).toBeGreaterThan(0);
+    expect(cvdSlopeUsd).toBeGreaterThan(0);
+    // az átlagos |delta| ≈ a gyertyánkénti delta, így a normalizált meredekség ≈ 1
+    expect(cvdSlopeNorm).toBeCloseTo(1, 1);
+    // a nyers meredekség USD/gyertya nagyságrendű, a normalizált dimenziótlan
+    expect(cvdSlopeUsd).toBeGreaterThan(1000);
+  });
+
   test('hibás piac (bv > v) kimarad és warning jelzi', () => {
     const good = makeMarket('GOOD', 10);
     const bad = makeMarket('BAD', 10);
