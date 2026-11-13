@@ -177,7 +177,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 .dot-pos { background: var(--pos); } .dot-neg { background: var(--neg); } .dot-neutral { background: var(--muted); }
 
 /* ---- lépések ---- */
-.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)); gap: 20px; align-items: start; }
+.steps { display: flex; gap: 20px; align-items: flex-start; }
+.steps-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 .group { padding: 0; overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
 .group:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); box-shadow: 0 10px 30px -18px var(--glow-a); }
 .group summary { cursor: pointer; list-style: none; padding: 20px 26px; font: 600 18px var(--display); display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: color 0.2s; }
