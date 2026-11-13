@@ -138,11 +138,20 @@ export const validateCandles = (candles) => {
 
 // ---------- 3.2 divergencia / abszorpció ----------
 
+// Normalizált CVD meredekség: a CVD lineáris regressziós meredeksége (egység/gyertya) osztva az
+// ablak átlagos |delta|-jával. Dimenziótlan: "hány átlagos delta-nyit emelkedik a CVD gyertyánként".
+// A CVD abszolút értéke ablakfüggő (az ablak elejétől összegzett), a meredekség viszont nem, és a
+// normalizálás miatt a piac méretétől és az egységtől (SOL/USD) is független. Nulla átlagos |delta|
+// esetén 0 (nincs jel). A bemenet már az ablakra szeletelt tömb (alapból divWindow = 20 gyertya).
+export const calculateCvdSlopeNorm = (cvds, deltas) => {
+  const avgAbsDelta = mean(deltas.map(Math.abs));
+  return avgAbsDelta > 0 ? linearRegression(cvds).slope / avgAbsDelta : 0;
+};
+
 // A bemenet már az ablakra szeletelt tömb. A holtsávon belüli meredekség nem ad irányt.
 export const detectDivergence = (closes, cvds, deltas, cfg = CONFIG) => {
   const priceSlope = linearRegression(closes).slope / (mean(closes) || 1);
-  const avgAbsDelta = mean(deltas.map(Math.abs));
-  const cvdSlope = avgAbsDelta > 0 ? linearRegression(cvds).slope / avgAbsDelta : 0;
+  const cvdSlope = calculateCvdSlopeNorm(cvds, deltas);
   const { price: minPrice, cvd: minCvd } = cfg.divMinSlope;
   let divergence = null;
   if (priceSlope < -minPrice && cvdSlope > minCvd) divergence = 'BULLISH';
@@ -395,8 +404,10 @@ export const computeMomentum = ({
     if (i < 2) return 0;
     const win = agg.slice(Math.max(0, i - N + 1), i + 1);
     if (win.some((a) => a.deltaComb === null)) return null;
-    const avgAbs = mean(win.map((a) => Math.abs(a.deltaComb)));
-    return avgAbs > 0 ? linearRegression(win.map((a) => a.cvdComb)).slope / avgAbs : 0;
+    return calculateCvdSlopeNorm(
+      win.map((a) => a.cvdComb),
+      win.map((a) => a.deltaComb)
+    );
   });
 
   const Z = cfg.zWindow;

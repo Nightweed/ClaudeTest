@@ -8,6 +8,7 @@ import {
   processCandles,
   validateCandles,
   detectDivergence,
+  calculateCvdSlopeNorm,
   detectAbsorption,
   getOIQuadrant,
   getLabel,
@@ -77,6 +78,26 @@ describe('statisztika', () => {
     expect(calculateZScore([5, 5, 5, 5])).toBe(0);
     expect(calculateZScore([7])).toBe(0);
     expect(calculateZScore([])).toBe(0);
+  });
+
+  test('CVD meredekség normalizálás: kézzel ellenőrzött értékek', () => {
+    // állandó +10 delta: CVD 10,20,...,100 -> meredekség 10, átl. |delta| 10 -> 1
+    const deltas = Array(10).fill(10);
+    const cvds = deltas.map((_, i) => 10 * (i + 1));
+    expect(calculateCvdSlopeNorm(cvds, deltas)).toBeCloseTo(1, 10);
+    // állandó -10 delta -> -1
+    expect(calculateCvdSlopeNorm(cvds.map((x) => -x), deltas.map((d) => -d))).toBeCloseTo(-1, 10);
+    // skálafüggetlen: a delta 1000-szerese (pl. USD vs SOL) ugyanazt adja
+    expect(calculateCvdSlopeNorm(cvds.map((x) => x * 1000), deltas.map((d) => d * 1000))).toBeCloseTo(1, 10);
+    // nulla delta -> 0 (nincs jel, nem NaN)
+    expect(calculateCvdSlopeNorm([0, 0, 0], [0, 0, 0])).toBe(0);
+  });
+
+  test('CVD meredekség: az ablak elejétől függő CVD szint nem számít, csak az alak', () => {
+    const deltas = [10, 10, 10, 10, 10];
+    const cvds = [10, 20, 30, 40, 50];
+    const shifted = cvds.map((x) => x + 1e6); // másik ablakkezdet -> eltolt abszolút CVD
+    expect(calculateCvdSlopeNorm(shifted, deltas)).toBeCloseTo(calculateCvdSlopeNorm(cvds, deltas), 8);
   });
 
   test('rollingZ: nem teljes ablak és null a sorozat közepén', () => {

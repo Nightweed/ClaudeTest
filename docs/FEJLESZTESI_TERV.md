@@ -17,7 +17,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 - A delta z-score 8,31 értéke nem származhat ebből a kódból (50 gyertyás ablakban a maximum 7, a kijelzett érték ±3-ra vágott); az eredete a végső tesztelésnél tisztázandó (a felhasználó döntése, 2026-11-13). Az elemzés, amiben szerepelt, nem tartalmazza; egy másik gyertya adatait elemzi.
 - A magyarázó nézet és a kijelzések egy része egyetlen piac gyertyájából, más része az összes perp USD-ben összegzett értékéből számol; a végső tesztnél érdemes egységesen jelölni, melyik melyik. A spot delta kijelzett egysége ("B"?) és a pontszám-összegzés (waterfall) ellenőrizendő.
-- A CVD meredekség z-score képlete nincs teljesen definiálva.
+- ~~A CVD meredekség z-score képlete nincs definiálva~~ → definiálva (2026-11-13): `calculateCvdSlopeNorm` = CVD regressziós meredekség / átl. |delta| (20 gyertya), arra 50 gyertyás z; a CVD abszolút értéke ablakfüggő, a normalizált meredekség nem. Tesztelve.
 - Az OI holtsáv numerikus küszöbei hiányoznak a dokumentációból.
 - Az abszorpció nem különíti el a vételi és eladási oldalt.
 - A likvidáció z-score előjele nem mutatja a long/short irányt.
