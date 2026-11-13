@@ -73,6 +73,22 @@ describe('statisztika', () => {
     expect(last.debug.scoreInput.deltaPctZ).toBe(3);
   });
 
+  test('z-score: nulla szórás és túl rövid ablak -> 0 (nincs jel, nem NaN)', () => {
+    expect(calculateZScore([5, 5, 5, 5])).toBe(0);
+    expect(calculateZScore([7])).toBe(0);
+    expect(calculateZScore([])).toBe(0);
+  });
+
+  test('rollingZ: nem teljes ablak és null a sorozat közepén', () => {
+    const z = rollingZ([1, 1, 1, 2], 50);
+    expect(z[0]).toBe(0); // 1 elemű ablak
+    expect(z[2]).toBe(0); // állandó ablak
+    expect(z[3]).toBeCloseTo(Math.sqrt(3), 6); // [1,1,1,2]: z = 0,75 / sqrt(0,1875)
+    // a null kimarad az ablakból, nem számít nullának
+    const withNull = rollingZ([1, null, 1, 2], 50);
+    expect(withNull[3]).toBeCloseTo(calculateZScore([1, 1, 2]), 10);
+  });
+
   test('rollingZ: null marad null, a többi folytatódik', () => {
     const z = rollingZ([1, 2, null, 4], 10);
     expect(z[2]).toBeNull();
