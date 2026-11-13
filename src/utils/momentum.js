@@ -483,6 +483,7 @@ export const computeMomentum = ({
       missing,
       components: {
         deltaPct: a.deltaPct,
+        deltaPctZRaw: deltaPctZ[i], // nyers (nem vágott) z-score, csak megjelenítésre/diagnosztikára
         cvdPerp: a.cvdPerp,
         cvdSpot: a.cvdSpot,
         cvdSlopeZ: zn(slopeZ[i]),

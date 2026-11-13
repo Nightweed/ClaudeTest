@@ -25,7 +25,7 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 ## Munkaszabályok
 
-Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képletek matematikai ellenőrzése; teszt minden módosításhoz; régi/új eredmény összevetése; működő részt nem változtatunk indokolatlanul; az eredeti verzió megmarad (git); módosítások dokumentálása.
+Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képletek matematikai ellenőrzése; teszt minden módosításhoz; régi/új eredmény összevetése; működő részt nem változtatunk indokolatlanul; az eredeti verziót nem őrizzük, a módosítások közvetlenül felülírják a kódot (a felhasználó döntése, 2026-11-13); módosítások dokumentálása.
 
 ## Állapot
 
@@ -38,4 +38,9 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
   - Minden vizsgált gyertyán teljesül: `bv ≤ v`, `btx ≤ tx`, és a számítás `sell = v − bv` definíció szerint adja az eladási oldalt.
   - Nyitott megjegyzés: a spot piacoknak nincs `oi_lq_vol_denominated_in` mezőjük, ezért a kód BASE-t feltételez. A feltevés a mérésekkel konzisztens, de közvetlen megerősítés (spot OHLCV USD-ben lekérve) még hiányzik.
 
-Utána jöhet a 2. szakasz (Z-score).
+**2. szakasz – folyamatban (2026-11-13).**
+
+- Az app a pontszámba és a kijelzőre ±3-ra vágott z-t ad (`zn()`), a vágatlan érték eddig nem volt elérhető.
+- 50 gyertyás ablakban, populációs szórással a z-score matematikai maximuma √49 = 7, így a 8,31 ebből a kódból nem származhat; az eredete (külső elemzés, más ablak vagy szóráskonvenció) még nyitott.
+- Kész: `components.deltaPctZRaw` (nyers delta z) + 2 teszt; a teljes csomag 53/53 zöld.
+- Következő: nyers/vágott z megjelenítése az `explain.js`-ben; a 8,31 eredetének tisztázása; abszorpció a vágatlan z-t használja (dokumentálandó).

@@ -56,6 +56,23 @@ describe('statisztika', () => {
     expect(calculateZScore([2, 2, 2])).toBe(0);
   });
 
+  test('z-score matematikai felső korlát: 50 elemű ablakban (populációs szórás) max sqrt(n-1) = 7', () => {
+    const xs = [...Array(49).fill(0), 1];
+    expect(calculateZScore(xs, 50)).toBeCloseTo(7, 6);
+  });
+
+  test('computeMomentum: a nyers delta z megmarad, a pontszámba vágott érték megy', () => {
+    const mk = (symbol) => {
+      const m = makeMarket(symbol, 60, { oiBase: 5000 });
+      m.ohlcv[59].bv = m.ohlcv[59].v; // szélsőséges vételi gyertya az utolsó helyen
+      return m;
+    };
+    const { snapshots } = computeMomentum({ perps: [mk('A')] });
+    const last = snapshots[59];
+    expect(last.components.deltaPctZRaw).toBeGreaterThan(3);
+    expect(last.debug.scoreInput.deltaPctZ).toBe(3);
+  });
+
   test('rollingZ: null marad null, a többi folytatódik', () => {
     const z = rollingZ([1, 2, null, 4], 10);
     expect(z[2]).toBeNull();
