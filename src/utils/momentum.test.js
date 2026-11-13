@@ -12,6 +12,7 @@ import {
   detectAbsorption,
   detectAbsorptionSide,
   getOIQuadrant,
+  QUADRANT_SCORE,
   getLabel,
   calculateMomentumScore,
   computeMomentum,
@@ -216,6 +217,78 @@ describe('OI kvadráns (3.3)', () => {
     expect(getOIQuadrant(-0.01, -0.02)).toBe('LONG_LIQUIDATION');
     expect(getOIQuadrant(0.001, 0.02, 0.005, 0)).toBe('NEUTRAL');
     expect(getOIQuadrant(0.01, 0.001, 0, 0.005)).toBe('NEUTRAL');
+  });
+
+  test('holtsáv határa: egyenlő a küszöbbel -> NEUTRAL, kicsivel fölötte jel (mindkét tengelyen)', () => {
+    expect(getOIQuadrant(0.005, 0.02, 0.005, 0)).toBe('NEUTRAL');
+    expect(getOIQuadrant(0.0051, 0.02, 0.005, 0)).toBe('NEW_LONGS');
+    expect(getOIQuadrant(0.01, 0.005, 0, 0.005)).toBe('NEUTRAL');
+    expect(getOIQuadrant(0.01, 0.0051, 0, 0.005)).toBe('NEW_LONGS');
+    // negatív oldalon ugyanígy (abszolút érték számít)
+    expect(getOIQuadrant(-0.005, -0.02, 0.005, 0)).toBe('NEUTRAL');
+  });
+
+  test('kvadráns pontok: erős (±1) és gyenge (±0,5) oldal, NEUTRAL = 0', () => {
+    expect(QUADRANT_SCORE).toEqual({ NEW_LONGS: 1, SHORT_COVERING: 0.5, NEW_SHORTS: -1, LONG_LIQUIDATION: -0.5, NEUTRAL: 0 });
+  });
+
+  test('pontszám: a kvadráns előjelét adja, a |dOI z| nagyságot (dOI z előjele nem számít)', () => {
+    const base = { deltaPctZ: 0, cvdSlopeZ: 0, spotLead: 0, liqZ: 0, fundingZ: 0 };
+    // short fedezés: dOI negatív -> dOI z negatív, mégis pozitív (gyenge) jel: 0,5 * 3/3
+    const cover = calculateMomentumScore({ ...base, oiQuadrant: 'SHORT_COVERING', dOIZ: -3 });
+    expect(cover.oiSignal).toBeCloseTo(0.5, 10);
+    expect(cover.raw).toBeCloseTo(0.25 * 0.5 * 3, 10); // w2 * oiSignal * 3
+    const liq = calculateMomentumScore({ ...base, oiQuadrant: 'LONG_LIQUIDATION', dOIZ: -3 });
+    expect(liq.oiSignal).toBeCloseTo(-0.5, 10);
+    expect(calculateMomentumScore({ ...base, oiQuadrant: 'NEUTRAL', dOIZ: 3 }).raw).toBe(0);
+  });
+
+  // 60 gyertya: az ár ±1%-ot, a natív OI ±0,5%-ot ingadozik; csak az utolsó gyertya változtatható.
+  const oiSeries = ({ lastMove, lastOiPct }) => {
+    const ohlcv = [];
+    const oi = [];
+    const oiNative = [];
+    for (let i = 0; i < 60; i++) {
+      const t = 1000 + i * 300;
+      const last = i === 59;
+      const move = last ? lastMove : i % 2 ? 0.01 : -0.01;
+      const oiPct = last ? lastOiPct : i % 2 ? 0.005 : -0.005;
+      ohlcv.push({ t, o: 100, h: 103, l: 97, c: 100 * (1 + move), v: 100, bv: 50, tx: 10, btx: 5 });
+      oi.push({ t, o: 1e5, c: 1e5 });
+      oiNative.push({ t, o: 1000, c: 1000 * (1 + oiPct) });
+    }
+    return { symbol: 'A', ohlcv, oi, oiNative };
+  };
+  const lastQuadrant = (opts) => {
+    const { snapshots } = computeMomentum({ perps: [oiSeries(opts)] });
+    return snapshots[59].components.oiQuadrant;
+  };
+
+  test('dOI több perp piacon: a piaconkénti natív OI-változást a USD-OI súlyozza', () => {
+    const mk = (symbol, usdOi, nativePct) => {
+      const ohlcv = [];
+      const oi = [];
+      const oiNative = [];
+      for (let i = 0; i < 5; i++) {
+        const t = 1000 + i * 300;
+        ohlcv.push({ t, o: 100, h: 101, l: 99, c: 100, v: 100, bv: 50, tx: 10, btx: 5 });
+        oi.push({ t, o: usdOi, c: usdOi });
+        oiNative.push({ t, o: 1000, c: 1000 * (1 + nativePct) });
+      }
+      return { symbol, ohlcv, oi, oiNative };
+    };
+    // A: 3e5 USD-OI, +2%; B: 1e5 USD-OI, 0% -> (3e5*0,02 + 0) / 4e5 = 0,015
+    const { snapshots } = computeMomentum({ perps: [mk('A', 3e5, 0.02), mk('B', 1e5, 0)] });
+    expect(snapshots[4].components.dOIPct).toBeCloseTo(0.015, 10);
+  });
+
+  test('holtsáv a teljes számításban (0,25 × szórás): kis ármozgás vagy kis OI-változás -> NEUTRAL', () => {
+    expect(lastQuadrant({ lastMove: 0.02, lastOiPct: 0.02 })).toBe('NEW_LONGS');
+    expect(lastQuadrant({ lastMove: 0.001, lastOiPct: 0.02 })).toBe('NEUTRAL'); // ár a holtsávon belül
+    expect(lastQuadrant({ lastMove: 0.02, lastOiPct: 0.0005 })).toBe('NEUTRAL'); // OI a holtsávon belül
+    expect(lastQuadrant({ lastMove: -0.02, lastOiPct: 0.02 })).toBe('NEW_SHORTS');
+    expect(lastQuadrant({ lastMove: 0.02, lastOiPct: -0.02 })).toBe('SHORT_COVERING');
+    expect(lastQuadrant({ lastMove: -0.02, lastOiPct: -0.02 })).toBe('LONG_LIQUIDATION');
   });
 });
 
