@@ -21,7 +21,11 @@ export const useHover = () => {
     const r = e.currentTarget.getBoundingClientRect();
     setHover(Math.min(n - 1, Math.max(0, Math.floor((e.clientX - r.left) / slot))));
   };
-  return { hover, hoverAt, clear: () => setHover(null) };
+  // Egér: elhagyáskor eltűnik; érintés: a buborék marad a következő érintésig.
+  const leave = (e) => {
+    if (e.pointerType === 'mouse') setHover(null);
+  };
+  return { hover, hoverAt, clear: () => setHover(null), leave };
 };
 
 export const niceTicks = (min, max, n = 4) => {
@@ -63,3 +67,13 @@ export const linePath = (values, x, y) => {
   });
   return d;
 };
+
+// Keskeny diagramon kevesebb x-tengely felirat fér el egymás mellett (különben egymásra csúsznak).
+export const xTickFractions = (w, withDay) => {
+  const minGap = withDay ? 92 : 62; // px / felirat
+  const count = Math.max(2, Math.min(5, Math.floor(w / minGap)));
+  return Array.from({ length: count }, (_, i) => i / (count - 1));
+};
+
+// Keskeny kijelzőn alacsonyabb diagram, hogy ne kelljen sokat görgetni.
+export const adaptiveHeight = (w, height) => (w < 480 ? Math.round(height * 0.82) : height);

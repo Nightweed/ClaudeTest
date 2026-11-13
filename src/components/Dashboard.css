@@ -227,3 +227,87 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 .units dt { font: 600 12.5px var(--mono); color: var(--accent); }
 .units dd { margin: 0; color: var(--ink-2); }
 @media (max-width: 560px) { .units dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } .units dd { margin-bottom: 8px; } }
+
+/* =====================================================================
+   Reszponzív réteg: telefon (≤560) · tablet (561–1000) · asztali (1001–1599) · nagy kijelző (≥1600)
+   ===================================================================== */
+
+/* menü: ikon + felirat; a rövid felirat csak telefonon látszik */
+.topnav button { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.topnav button i { font-style: normal; color: var(--accent); font-size: 1.1em; }
+.tab-short { display: none; }
+
+/* érintési célok: legalább 44 px, a kis ⓘ ikon is nagyobb találati felületet kap */
+.info::after { content: ''; position: absolute; inset: -14px; }
+.info { position: relative; }
+@media (pointer: coarse) {
+  .btn, .seg button, .settings summary { min-height: 44px; display: inline-flex; align-items: center; }
+  .group summary { min-height: 56px; }
+}
+
+/* nagy kijelző: szélesebb tartalom, 3 oszlopos diagramrács, nagyobb alapbetű */
+@media (min-width: 1600px) {
+  .dashboard-container { max-width: 1480px; font-size: 16px; }
+  .g-2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g-2 > :last-child:nth-child(3n + 2) { grid-column: span 2; }
+  .hero { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); }
+}
+@media (min-width: 2200px) {
+  .dashboard-container { max-width: 1760px; font-size: 17px; }
+}
+
+/* tablet: két oszlopos KPI, a menü marad felül */
+@media (min-width: 561px) and (max-width: 1000px) {
+  .dashboard-container { padding-top: 20px; }
+}
+
+/* telefon: alsó fül-sáv, húzható KPI-k, kompakt kártyák */
+@media (max-width: 560px) {
+  .dashboard-container { padding: 14px 0 calc(92px + env(safe-area-inset-bottom, 0px)); font-size: 14.5px; }
+  .ambient::before, .ambient::after { filter: blur(50px); }
+  .sweep { display: none; }
+
+  .topnav { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 20; flex-direction: row; gap: 6px; margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); border-radius: 18px 18px 0 0; border-width: 1px 0 0; background: color-mix(in srgb, var(--surface) 90%, transparent); }
+  .topnav button { flex-direction: column; gap: 2px; padding: 8px 6px; font-size: 12.5px; min-height: 52px; }
+  .topnav button i { font-size: 18px; line-height: 1; }
+  .tab-long { display: none; }
+  .tab-short { display: inline; }
+
+  .head h1 { font-size: 32px; }
+  .head-sub { font-size: 14px; margin-top: 6px; }
+  .stamp { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+  .controls { margin: 14px 0 6px; }
+  .settings { margin-left: 0; width: 100%; }
+  .settings label, .settings input { width: 100%; min-width: 0; }
+
+  .hero { gap: 12px; margin-top: 10px; }
+  .hero-text { max-width: none; }
+  /* a négy KPI egy húzható sáv: a következő kártya kilátszik, jelezve a lapozhatóságot */
+  .kpis { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 10px; }
+  .kpis::-webkit-scrollbar { display: none; }
+  .kpi { flex: 0 0 80%; scroll-snap-align: center; }
+  .kpi-v { font-size: 28px; }
+
+  .section { margin-top: 30px; }
+  .section-title { font-size: 20px; gap: 10px; }
+  .section-sub { font-size: 13.5px; }
+  .card { border-radius: 16px; }
+  .card h3 { font-size: 16px; }
+  .grid { gap: 12px; }
+  .mt { margin-top: 12px; }
+
+  .tooltip { min-width: 110px; font-size: 11.5px; }
+
+  .steps, .steps-col { gap: 12px; }
+  .group summary { padding: 14px 16px; font-size: 16px; }
+  .step { padding: 12px 16px; }
+  .step-row { flex-direction: column; gap: 2px; }
+  .step-row em { text-align: left; }
+  .foot { margin-top: 32px; }
+}
+
+/* fekvő telefon: alacsony kijelző, kompakt alsó sáv */
+@media (max-height: 480px) and (orientation: landscape) and (max-width: 950px) {
+  .topnav button { flex-direction: row; min-height: 40px; }
+  .dashboard-container { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}

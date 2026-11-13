@@ -45,8 +45,12 @@ function Dashboard() {
       <div className="ambient" aria-hidden="true" />
       <div className="sweep" aria-hidden="true" />
       <nav className="topnav" role="tablist" aria-label="Oldalak">
-        {[['overview', 'Áttekintés'], ['calc', 'Számítás lépésről lépésre']].map(([k, label]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{label}</button>
+        {[['overview', '◐', 'Áttekintés', 'Áttekintés'], ['calc', '∑', 'Számítás lépésről lépésre', 'Számítás']].map(([k, glyph, label, short]) => (
+          <button key={k} role="tab" aria-selected={tab === k} aria-label={label} onClick={() => setTab(k)}>
+            <i aria-hidden="true">{glyph}</i>
+            <span className="tab-long">{label}</span>
+            <span className="tab-short">{short}</span>
+          </button>
         ))}
       </nav>
 

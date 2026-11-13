@@ -1,11 +1,12 @@
 import React from 'react';
-import { useWidth, useHover, niceTicks, timeLabel, leftMargin } from './utils';
+import { useWidth, useHover, xTickFractions, adaptiveHeight, niceTicks, timeLabel, leftMargin } from './utils';
 import { num } from '../../utils/format';
 
 // Gyertyadiagram + alatta volumen-sáv. candles: [{ t, o, h, l, c, v, delta }]
-export default function CandleChart({ candles, height = 320, priceFmt = (v) => num(v, 2) }) {
+export default function CandleChart({ candles, height: baseHeight = 320, priceFmt = (v) => num(v, 2) }) {
   const [ref, w] = useWidth();
-  const { hover, hoverAt, clear } = useHover();
+  const height = adaptiveHeight(w, baseHeight);
+  const { hover, hoverAt, leave } = useHover();
   const n = candles.length;
   if (!n) return <div ref={ref} className="chart-empty">Nincs adat</div>;
 
@@ -26,13 +27,13 @@ export default function CandleChart({ candles, height = 320, priceFmt = (v) => n
   const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   const volTop = m.t + ih + gap;
   const withDay = candles[n - 1].t - candles[0].t > 20 * 3600;
-  const xTicks = [...new Set([0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (n - 1))))];
+  const xTicks = [...new Set(xTickFractions(w, withDay).map((f) => Math.round(f * (n - 1))))];
   const bw = Math.max(1.5, slot * 0.66);
   const up = (c) => c.c >= c.o;
   const hc = hover === null ? null : candles[hover];
 
   return (
-    <div ref={ref} className="chart-wrap" onMouseLeave={clear}>
+    <div ref={ref} className="chart-wrap" onPointerLeave={leave}>
       <svg width={w} height={height} role="img" aria-label="Gyertyadiagram">
         {ticks.map((t) => (
           <g key={t}>
@@ -64,7 +65,7 @@ export default function CandleChart({ candles, height = 320, priceFmt = (v) => n
             <line className="cross" x1={m.l} x2={w - m.r} y1={y(hc.c)} y2={y(hc.c)} />
           </g>
         )}
-        <rect x={m.l} y={m.t} width={iw} height={ih + gap + volH} fill="transparent" onMouseMove={(e) => hoverAt(e, slot, n)} />
+        <rect x={m.l} y={m.t} width={iw} height={ih + gap + volH} fill="transparent" onPointerMove={(e) => hoverAt(e, slot, n)} onPointerDown={(e) => hoverAt(e, slot, n)} />
       </svg>
       {hc && (
         <div className="tooltip" style={{ left: x(hover), transform: `translateX(${x(hover) > w / 2 ? 'calc(-100% - 12px)' : '12px'})` }}>

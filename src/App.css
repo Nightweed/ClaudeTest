@@ -1,6 +1,6 @@
 .App {
   min-height: 100vh;
-  padding: 0 max(16px, env(safe-area-inset-left, 0px));
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
 }
 
 .container {

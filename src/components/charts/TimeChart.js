@@ -1,12 +1,13 @@
 import React, { useId } from 'react';
-import { useWidth, useHover, niceTicks, timeLabel, linePath, leftMargin } from './utils';
+import { useWidth, useHover, xTickFractions, adaptiveHeight, niceTicks, timeLabel, linePath, leftMargin } from './utils';
 import { compact } from '../../utils/format';
 
 // times: unix másodpercek; series: [{ name, color, values }] ugyanolyan hosszú tömbökkel.
 // bars: oszlopdiagram, az első sorozat előjel szerint kék (+) / piros (−).
-export default function TimeChart({ times, series, bars = false, area = false, height = 220, fmt = compact, refLines = [], tipFmt }) {
+export default function TimeChart({ times, series, bars = false, area = false, height: baseHeight = 220, fmt = compact, refLines = [], tipFmt }) {
   const [ref, w] = useWidth();
-  const { hover, hoverAt, clear } = useHover();
+  const height = adaptiveHeight(w, baseHeight);
+  const { hover, hoverAt, leave } = useHover();
   const gid = useId();
   const n = times.length;
   const vals = series.flatMap((s) => s.values).filter(Number.isFinite);
@@ -29,11 +30,11 @@ export default function TimeChart({ times, series, bars = false, area = false, h
   const x = (i) => m.l + (i + 0.5) * slot;
   const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   const withDay = times[n - 1] - times[0] > 20 * 3600;
-  const xTicks = [...new Set([0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (n - 1))))];
+  const xTicks = [...new Set(xTickFractions(w, withDay).map((f) => Math.round(f * (n - 1))))];
   const tip = tipFmt || fmt;
 
   return (
-    <div ref={ref} className="chart-wrap" onMouseLeave={clear}>
+    <div ref={ref} className="chart-wrap" onPointerLeave={leave}>
       <svg width={w} height={height} role="img">
         {area && (
           <defs>
@@ -100,7 +101,7 @@ export default function TimeChart({ times, series, bars = false, area = false, h
               )}
           </g>
         )}
-        <rect x={m.l} y={m.t} width={iw} height={ih} fill="transparent" onMouseMove={(e) => hoverAt(e, slot, n)} />
+        <rect x={m.l} y={m.t} width={iw} height={ih} fill="transparent" onPointerMove={(e) => hoverAt(e, slot, n)} onPointerDown={(e) => hoverAt(e, slot, n)} />
       </svg>
 
       {hover !== null && (

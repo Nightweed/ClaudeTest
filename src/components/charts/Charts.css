@@ -1,4 +1,4 @@
-.chart-wrap { position: relative; width: 100%; }
+.chart-wrap { position: relative; width: 100%; touch-action: pan-y; }
 .chart-wrap svg { display: block; overflow: hidden; }
 .chart-empty { padding: 48px 0; text-align: center; color: var(--muted); font-size: 13px; }
 
