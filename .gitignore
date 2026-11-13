@@ -24,3 +24,6 @@ yarn-error.log*
 # Windows
 desktop.ini
 Thumbs.db
+
+# Claude Code helyi utasítások (csak a gépen marad)
+CLAUDE.md
