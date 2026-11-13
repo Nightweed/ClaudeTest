@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from './ui';
+import { Card, Info } from './ui';
 import { Gauge } from './charts';
 import { LABELS, verdictText } from '../utils/dashboardData';
 import { compact, sgn, pct, tone } from '../utils/format';
@@ -10,10 +10,10 @@ export default function Hero({ last, quadrantText }) {
   const { score } = last.debug;
   const lab = LABELS[last.label];
   const kpis = [
-    { k: 'Momentum', v: sgn(last.momentum, 3), t: tone(last.momentum), d: `${lab.name}: −0,2 és +0,2 között semleges, ±0,5 felett erős a jel.` },
-    { k: 'Nyers pontszám', v: sgn(score.raw, 3), t: tone(score.raw), d: 'A súlyozott összeg a crowding levonás után. Ennek a harmada a momentum.' },
-    { k: 'Delta z / Funding z', v: `${sgn(si.deltaPctZ)}  /  ${sgn(si.fundingZ)}`, t: tone(si.deltaPctZ), d: 'A kombinált delta % szokatlansága az elmúlt 50 gyertyához képest, és a funding zsúfoltsága.' },
-    { k: 'OI változás / perp CVD', v: `${pct(c.dOIPct, 3)}  /  ${compact(c.cvdPerp, 2)}`, t: tone(c.dOIPct), d: 'A nyitott pozíciók változása a gyertyában, és a kumulált perp delta USD-ben.' },
+    { id: 'momentum', k: 'Momentum', v: sgn(last.momentum, 3), t: tone(last.momentum), d: `${lab.name}: −0,2 és +0,2 között semleges, ±0,5 felett erős a jel.` },
+    { id: 'rawScore', k: 'Nyers pontszám', v: sgn(score.raw, 3), t: tone(score.raw), d: 'A súlyozott összeg a crowding levonás után. Ennek a harmada a momentum.' },
+    { id: 'deltaFunding', k: 'Delta z / Funding z', v: `${sgn(si.deltaPctZ)}  /  ${sgn(si.fundingZ)}`, t: tone(si.deltaPctZ), d: 'A kombinált delta % szokatlansága az elmúlt 50 gyertyához képest, és a funding zsúfoltsága.' },
+    { id: 'oiCvd', k: 'OI változás / perp CVD', v: `${pct(c.dOIPct, 3)}  /  ${compact(c.cvdPerp, 2)}`, t: tone(c.dOIPct), d: 'A nyitott pozíciók változása a gyertyában, és a kumulált perp delta USD-ben.' },
   ];
   return (
     <div className="hero">
@@ -25,7 +25,7 @@ export default function Hero({ last, quadrantText }) {
       <div className="kpis">
         {kpis.map((x) => (
           <Card key={x.k} className={`kpi kpi-${x.t}`}>
-            <div className="eyebrow">{x.k}</div>
+            <div className="eyebrow">{x.k}<Info id={x.id} /></div>
             <div className="kpi-v">{x.v}</div>
             <p>{x.d}</p>
           </Card>

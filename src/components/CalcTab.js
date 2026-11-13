@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Section } from './ui';
+import { Section, Info } from './ui';
+import { NAME_TO_ID } from '../utils/glossary';
 
 // Két oszlop fölött széles képernyőn; keskenyen egy oszlop. A csoportok váltakozva kerülnek az oszlopokba
 // (1. bal, 2. jobb, 3. bal, ...), így a kinyitott csoport csak a saját oszlopát nyújtja, nincs hézag a szomszéd alatt.
@@ -23,7 +24,7 @@ const Group = ({ g }) => (
     <summary>{g.name}</summary>
     {g.rows.map((r) => (
       <div key={r.name} className="step">
-        <div className="step-row"><b>{r.name}</b><em>{r.result}</em></div>
+        <div className="step-row"><b>{r.name}<Info id={NAME_TO_ID[r.name]} /></b><em>{r.result}</em></div>
         {r.text && <p>{r.text}</p>}
         {r.formula && <code>{r.formula}{r.values ? `  →  ${r.values}` : ''}</code>}
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Section } from './ui';
+import { Card, Section, Info } from './ui';
 import Hero from './Hero';
 import { TimeChart, CandleChart, Donut, Waterfall, ContribBars } from './charts';
 import { scoreWaterfall } from '../utils/waterfall';
@@ -16,7 +16,7 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
       <Section n="01" title="Agresszió és delta" sub="Ki az agresszív fél: a vevők vagy az eladók, és melyik piacon.">
         <div className="grid g-1-2">
           <Card>
-            <h3>Vételi / eladási volumen</h3>
+            <h3>Vételi / eladási volumen<Info id="buySell" /></h3>
             <p className="sub">Az utolsó gyertya perp forgalma, {unit}-ban.</p>
             <Donut buy={lastRow.buyVol} sell={lastRow.volume - lastRow.buyVol} unit={unit} />
             <p className="note">
@@ -24,13 +24,13 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
             </p>
           </Card>
           <Card>
-            <h3>Delta gyertyánként</h3>
+            <h3>Delta gyertyánként<Info id="delta" /></h3>
             <p className="sub">Vételi mínusz eladási agresszió, perp, {unit}. Kék: a vevők nyomnak, piros: az eladók.</p>
             <TimeChart times={view.map((r) => r.t)} series={[{ name: 'Delta', values: view.map((r) => r.delta) }]} bars tipFmt={(v) => `${num(v, 0)} ${unit}`} />
           </Card>
         </div>
         <Card className="mt">
-          <h3>Perp és spot delta az utolsó gyertyában</h3>
+          <h3>Perp és spot delta az utolsó gyertyában<Info id="perpSpotDelta" /></h3>
           <p className="sub">USD-ben. Ha a perp sokkal erősebb, a tőkeáttétel vezeti a mozgást.</p>
           <ContribBars
             items={[
@@ -41,7 +41,7 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
         </Card>
       </Section>
 
-      <Section n="02" title="Így áll össze a pontszám" sub="A nyers pontszám tagjai. A momentum ennek a harmada, −1 és +1 közé vágva.">
+      <Section n="02" title="Így áll össze a pontszám" info="waterfall" sub="A nyers pontszám tagjai. A momentum ennek a harmada, −1 és +1 közé vágva.">
         <Card>
           {last.valid ? (
             <Waterfall items={scoreWaterfall(last.debug.score, last.debug.scoreInput, last.debug.weights).map((t) => ({ label: WATERFALL_LABELS[t.key], value: t.value }))} />
@@ -56,13 +56,13 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
 
       <Section n="03" title="Árfolyam és idősorok" sub="A gyertyák, a momentum és a mögötte lévő piaci adatok ugyanazon az időtengelyen.">
         <Card>
-          <h3>SOL perp gyertyák</h3>
+          <h3>SOL perp gyertyák<Info id="candles" /></h3>
           <p className="sub">Kék gyertya: a zárás a nyitás felett, piros: alatta. Alul a volumen.</p>
           <CandleChart candles={view.map((r) => ({ t: r.t, o: r.open, h: r.high, l: r.low, c: r.close, v: r.volume, delta: r.delta }))} />
         </Card>
         <div className="grid g-2 mt">
           <Card>
-            <h3>Momentum alakulása</h3>
+            <h3>Momentum alakulása<Info id="momentumChart" /></h3>
             <p className="sub">A szaggatott vonalak a sávhatárok: ±0,2 felett irányjel, ±0,5 felett erős.</p>
             <TimeChart
               times={snapView.map((s) => s.t)}
@@ -73,7 +73,7 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
             />
           </Card>
           <Card>
-            <h3>Perp és spot CVD</h3>
+            <h3>Perp és spot CVD<Info id="cvdChart" /></h3>
             <p className="sub">Kumulált delta USD-ben az ablak elejétől. Ha a spot vezet, az egészségesebb.</p>
             <div className="legend"><span><i style={{ background: 'var(--s1)' }} />Perp</span><span><i style={{ background: 'var(--s2)' }} />Spot</span></div>
             <TimeChart
@@ -86,24 +86,24 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
             />
           </Card>
           <Card>
-            <h3>Open interest</h3>
+            <h3>Open interest<Info id="oiChart" /></h3>
             <p className="sub">A nyitott pozíciók értéke USD-ben a gyertya végén.</p>
             <TimeChart times={view.map((r) => r.t)} series={[{ name: 'OI', color: 'var(--s1)', values: view.map((r) => r.oiClose) }]} area tipFmt={(v) => `${compact(v, 2)} $`} />
           </Card>
           <Card>
-            <h3>Funding</h3>
+            <h3>Funding<Info id="fundingChart" /></h3>
             <p className="sub">Kék: pozitív (a longok fizetnek), piros: negatív. Túl magas érték zsúfolt pozícionálást jelez.</p>
             <TimeChart times={view.map((r) => r.t)} series={[{ name: 'Funding', values: view.map((r) => r.fundingClose) }]} bars fmt={(v) => num(v, 4)} tipFmt={(v) => num(v, 5)} />
           </Card>
           <Card>
-            <h3>Nettó likvidáció</h3>
+            <h3>Nettó likvidáció<Info id="netLiq" /></h3>
             <p className="sub">Short mínusz long likvidáció. Kék: a shortokat likvidálták, piros: a longokat.</p>
             <TimeChart times={snapView.map((s) => s.t)} series={[{ name: 'Short − long', values: snapView.map((s) => s.components.netLiqUsd) }]} bars tipFmt={(v) => `${compact(v, 2)} $`} />
           </Card>
         </div>
       </Section>
 
-      <Section n="04" title="Jelzések" sub="Az utolsó gyertya jelzései a tényleges értékekkel.">
+      <Section n="04" title="Jelzések" info="signals" sub="Az utolsó gyertya jelzései a tényleges értékekkel.">
         <Card>
           <ul className="signals">
             {buildSignals(last).map((s) => (
@@ -113,6 +113,25 @@ export default function OverviewTab({ last, lastRow, view, snapView, explanation
               </li>
             ))}
           </ul>
+        </Card>
+      </Section>
+
+      <Section n="05" title="Mértékegységek és jelölések" info="units" sub="Hogy minden szám egyértelműen olvasható legyen.">
+        <Card className="units">
+          <dl>
+            <dt>Volumen ({unit})</dt>
+            <dd>A perp és a spot piacok forgalma is {unit}-ban (bázis asset) érkezik. A spot egységét mérésből ellenőriztük: az átlagos kötésméret kb. 15 {unit}, ami nem lehet USD.</dd>
+            <dt>USD-értékek</dt>
+            <dd>A delta, a CVD és a spot/perp összehasonlítás USD-ben szerepel. Az átváltás közelítés: delta × a gyertya záróára, nem a gyertya átlagára.</dd>
+            <dt>Rövidítések</dt>
+            <dd>E = ezer, M = millió, Mrd = milliárd, B = billió (10<sup>12</sup>). Figyelem: a magyar B nem az angol „billion" (10<sup>9</sup>). A spot és perp delta valós nagysága E–M, ezért „B" itt nem várt érték.</dd>
+            <dt>Idő</dt>
+            <dd>A gyertya nyitási ideje, helyi időben. Csak lezárt gyertya számít, a formálódó nem.</dd>
+            <dt>z-score</dt>
+            <dd>Az érték eltérése az elmúlt 50 gyertya átlagától szórásegységben. A pontszámba ±3-ra vágva kerül, a nyers érték a számítás nézetben látszik.</dd>
+            <dt>CVD</dt>
+            <dd>Az ablak elejétől kumulált delta; az abszolút szintje az ablaktól függ, az irányát a meredekség adja.</dd>
+          </dl>
         </Card>
       </Section>
     </>
