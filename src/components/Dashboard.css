@@ -282,10 +282,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 
   .hero { gap: 12px; margin-top: 10px; }
   .hero-text { max-width: none; }
-  /* a négy KPI egy húzható sáv: a következő kártya kilátszik, jelezve a lapozhatóságot */
-  .kpis { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 10px; }
-  .kpis::-webkit-scrollbar { display: none; }
-  .kpi { flex: 0 0 80%; scroll-snap-align: center; }
+  /* a négy KPI egymás alatt, oldalirányú görgetés nélkül */
+  .kpis { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .kpi-v { font-size: 28px; }
 
   .section { margin-top: 30px; }
