@@ -19,8 +19,13 @@ const useIsWide = () => {
   return wide;
 };
 
-const Group = ({ g }) => (
-  <details className="card group">
+// Harmonika: a nyitott csoport nevét a szülő tárolja, így egyszerre csak egy lehet nyitva.
+const Group = ({ g, open, onToggle }) => (
+  <details
+    className="card group"
+    open={open}
+    onToggle={(e) => onToggle(g.name, e.currentTarget.open)}
+  >
     <summary>{g.name}</summary>
     {g.rows.map((r) => (
       <div key={r.name} className="step">
@@ -34,6 +39,9 @@ const Group = ({ g }) => (
 
 export default function CalcTab({ groups }) {
   const wide = useIsWide();
+  const [openName, setOpenName] = useState(null);
+  const onToggle = (name, isOpen) =>
+    setOpenName((cur) => (isOpen ? name : cur === name ? null : cur));
   const cols = wide ? [groups.filter((_, i) => i % 2 === 0), groups.filter((_, i) => i % 2 === 1)] : [groups];
   return (
     <Section n="" title="Számítás lépésről lépésre" sub="Minden eredmény a képletével és a behelyettesített számokkal. Kattints egy csoportra a kinyitáshoz.">
@@ -41,7 +49,7 @@ export default function CalcTab({ groups }) {
         {cols.map((col, ci) => (
           <div className="steps-col" key={ci}>
             {col.map((g) => (
-              <Group key={g.name} g={g} />
+              <Group key={g.name} g={g} open={openName === g.name} onToggle={onToggle} />
             ))}
           </div>
         ))}
