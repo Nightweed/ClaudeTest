@@ -104,7 +104,7 @@ export function useMarketData() {
       const unitWarnings = perpUnit ? [] : [`${symbol}: ismeretlen volumenegység, BASE-nek vesszük`];
       warnings = [...unitWarnings, ...warnings];
     }
-    setRows(buildRows(data, snapshots));
+    setRows(buildRows(data, snapshots, { interval }));
     setSnaps(snapshots);
 
     if (data.ohlcv?.length) {

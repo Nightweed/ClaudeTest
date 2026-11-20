@@ -1,18 +1,21 @@
-import { calculateDelta, calculateDeltaPct, calculateCVD, byT } from './momentum';
+import { calculateDelta, calculateDeltaPct, calculateCVD, byT, dropUnfinished, INTERVAL_SECONDS } from './momentum';
 import { num, sgn, tone } from './format';
 
 // Idő szerint összefűzi a forrásokat egy táblázatsorrá (legújabb elöl).
-export const buildRows = (d, snapshots = []) => {
+// Csak lezárt gyertyák kerülnek bele (ugyanaz a szűrés, mint a computeMomentum-ban), így a sorok és a
+// snapshotok ugyanazon az utolsó időponton végződnek; a formálódó gyertya részleges delta-t mutatna.
+export const buildRows = (d, snapshots = [], { interval = '1hour', now = Date.now() } = {}) => {
+  const candles = dropUnfinished(d.ohlcv || [], now / 1000, INTERVAL_SECONDS[interval] ?? 3600);
   const snapByT = new Map(snapshots.map((s) => [s.t, s]));
   const oi = byT(d.oi);
   const funding = byT(d.funding);
   const liq = byT(d.liq);
   const lsr = byT(d.lsr);
 
-  const deltas = (d.ohlcv || []).map((c) => calculateDelta(c.bv, c.v));
+  const deltas = candles.map((c) => calculateDelta(c.bv, c.v));
   const cvd = calculateCVD(deltas);
 
-  return (d.ohlcv || [])
+  return candles
     .map((c, i) => ({
       t: c.t,
       time: new Date(c.t * 1000).toLocaleString('hu-HU'),
