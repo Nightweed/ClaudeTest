@@ -61,14 +61,23 @@ export const WATERFALL_LABELS = {
   orderFlow: 'Order flow',
   oi: 'Open interest',
   spot: 'Spot lead',
-  liq: 'Likvidáció',
+  liq: 'Likvidációs csillapítás',
   crowding: 'Crowding',
 };
 
 export const verdictText = (snap, quadrantText) => {
   if (snap.momentum === null) return `Hiányzó adat (${snap.missing.join(', ')}) miatt nincs értelmezhető jel.`;
+  // A nyers irányt a kombinált (perp+spot) delta előjele adja; az orderFlow z-score keverék (relatív a
+  // saját átlagához), ezért előjele ellentmondhat a nyers iránynak.
   const { orderFlow } = snap.debug.score;
-  const flow = orderFlow < 0 ? 'Az eladói agresszió dominál' : 'A vevői agresszió dominál';
+  const dp = snap.components.deltaPct;
+  const buyers = dp > 0;
+  let flow = dp === 0 || !Number.isFinite(dp)
+    ? 'A vételi és eladási agresszió kiegyenlített'
+    : `A kombinált (perp+spot) delta ${buyers ? 'vevői' : 'eladói'} oldalon áll`;
+  if (Number.isFinite(dp) && dp !== 0 && Math.sign(orderFlow) === -Math.sign(dp)) {
+    flow += `, de a szokásos szinthez képest ${buyers ? 'gyengébb' : 'erősebb'} (az order-flow tag ${buyers ? 'negatív' : 'pozitív'})`;
+  }
   return `${flow}. ${quadrantText ? quadrantText.charAt(0).toUpperCase() + quadrantText.slice(1) : ''}.`;
 };
 

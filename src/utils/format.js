@@ -1,5 +1,6 @@
+// A kerekítés után nullára jövő érték (−0, −1e-12) „0", nem „−0".
 export const num = (v, d = 2) =>
-  Number.isFinite(v) ? v.toLocaleString('hu-HU', { maximumFractionDigits: d }) : '–';
+  Number.isFinite(v) ? (Number(v.toFixed(d)) === 0 ? 0 : v).toLocaleString('hu-HU', { maximumFractionDigits: d }) : '–';
 
 export const compact = (v, d = 1) =>
   new Intl.NumberFormat('hu-HU', { notation: 'compact', maximumFractionDigits: d }).format(v);

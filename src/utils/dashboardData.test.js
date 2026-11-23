@@ -40,3 +40,21 @@ describe('buildRows és computeMomentum ugyanazt a lezárt gyertyát látja', ()
     expect(later).toHaveLength(history.length);
   });
 });
+
+describe('verdictText: a nyers irányt a kombinált delta adja', () => {
+  const { verdictText, WATERFALL_LABELS } = require('./dashboardData');
+  const snap = (deltaPct, orderFlow) => ({ momentum: 0.03, missing: [], components: { deltaPct }, debug: { score: { orderFlow } } });
+
+  test('pozitív kombinált delta + negatív order-flow z: nem „eladói agresszió dominál"', () => {
+    const t = verdictText(snap(0.0041, -0.4), 'új long pozíciók');
+    expect(t).toMatch(/vevői oldalon áll, de a szokásos szinthez képest gyengébb/);
+    expect(t).not.toMatch(/Az eladói agresszió dominál/);
+  });
+  test('egyező irány: nincs megjegyzés; negatív delta eladói', () => {
+    expect(verdictText(snap(0.01, 0.5), '')).not.toMatch(/de a szokásos/);
+    expect(verdictText(snap(-0.01, -0.5), '')).toMatch(/eladói oldalon áll\./);
+  });
+  test('a waterfall oszlop neve a csillapítás', () => {
+    expect(WATERFALL_LABELS.liq).toBe('Likvidációs csillapítás');
+  });
+});

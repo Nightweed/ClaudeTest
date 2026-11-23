@@ -25,7 +25,7 @@ export const GLOSSARY = {
   // ---- fogalmak (számítás nézet) ----
   zscore: 'A z-score azt mondja meg, hány szórásnyira van az érték az elmúlt 50 gyertya átlagától. 0: átlagos, ±1–2: kissé szokatlan, ±3 fölött extrém. A pontszámba ±3-ra vágva kerül; a nyers érték is látszik.',
   cvd: 'CVD = a delta kumulált összege. Az abszolút szintje az ablak elejétől függ, ezért az irányt a meredeksége (trendje) adja, normalizálva.',
-  cvdSlope: 'A CVD trendje az utolsó 20 gyertyán (regressziós meredekség), az átlagos |delta|-val normalizálva, majd 50 gyertyás z-score. Pozitív: a CVD emelkedik.',
+  cvdSlope: 'A CVD trendje az utolsó 20 gyertyán (regressziós meredekség), az átlagos |delta|-val normalizálva, majd 50 gyertyás z-score. A z nem az irányt mutatja, hanem hogy a mostani meredekség az utolsó 50 gyertya átlagához képest nagyobb (+) vagy kisebb (−); az irányt a meredekség USD/gyertya értéke adja.',
   sizeSkew: 'Az átlagos vételi és eladási kötésméret aránya. 1 fölött a vételi oldalon nagyobbak a kötések (nagyobb szereplők vesznek), alatta az eladásin.',
   divergence: 'Divergencia: az ár és a CVD ellentétes irányba mozog. BULLISH: az ár esik, de a CVD emelkedik (a vevők gyűjtenek). BEARISH: az ár emelkedik, de a CVD esik. Kis meredekségnél (holtsáv) nincs jel.',
   absorption: 'Abszorpció: nagy agresszió (delta), de az ár alig mozdul, vagyis valaki felszívja a megbízásokat. Megfigyelés, nem fordulójel: önmagában nem mond irányt.',
