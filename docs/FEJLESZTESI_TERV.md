@@ -15,7 +15,6 @@ Kód: React/JS – `src/utils/momentum.js`, `src/services/dataFetcher.js`, `src/
 
 ## Ismert nyitott problémák
 
-- **Emlékeztető (nem hiba, nem reprodukálható):** korábban egy delta z-score 8,31-es érték szerepelt egy elemzésben; a jelenlegi kódból nem jöhet ki (50 gyertyás ablakban a maximum 7, a kijelzett érték ±3-ra vágva). Friss adatokkal figyeljük: ha újra előjön, rögzítsük a gyertyát és a nyers adatot; ha nem, az új számítás megfelelő (felhasználó döntése, 2026-11-13).
 - A magyarázó nézet és a kijelzések egy része egyetlen piac gyertyájából, más része az összes perp USD-ben összegzett értékéből számol; a végső tesztnél érdemes egységesen jelölni, melyik melyik. A spot delta kijelzett egysége ("B"?) és a pontszám-összegzés (waterfall) ellenőrizendő.
 - ~~A CVD meredekség z-score képlete nincs definiálva~~ → definiálva (2026-11-13): `calculateCvdSlopeNorm` = CVD regressziós meredekség / átl. |delta| (20 gyertya), arra 50 gyertyás z; a CVD abszolút értéke ablakfüggő, a normalizált meredekség nem. Tesztelve.
 - ~~Az OI holtsáv numerikus küszöbei hiányoznak~~ → dokumentálva (lásd 5. szakasz); a 0,25 szorzó kezdő feltételezés, a 7. szakaszban igazolandó.
@@ -38,6 +37,17 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
 
 - **Nettó inflow/outflow adatok megjelenítése** (felhasználó kérése, 2026-11-13). Nem része a 7 szakasznak; adatforrás még eldöntetlen (Coinalyze delta/CVD alapú nettó pénzáramlás vs. külső tőzsde in/outflow). Először forrás és képlet tisztázása, utána kijelzés.
 
+- **Vercel-telepítés: kulcs a szerveren, privát oldal (jövőbeni projekt, 2026-11-25).** Az „igazi" fejlesztések után. Még nincs megvalósítva.
+  - Állapot: a kulcsot a `REACT_APP_COINALYZE_API_KEY` adja, amit a CRA beleéget a böngészős csomagba (`src/services/dataFetcher.js:4,20`); a `package.json` `proxy` mezője csak fejlesztéskor működik. A `.env` ignorálva van és soha nem volt commitolva.
+  - Terv:
+    1. `api/coinalyze.js` serverless függvény a `COINALYZE_API_KEY`-vel (előtag nélkül), végpont-whitelisttel (`ohlcv-history`, `open-interest-history`, `funding-rate-history`, `liquidation-history`, `long-short-ratio-history`, `future-markets`), csak GET, a `Retry-After` továbbadásával.
+    2. A `dataFetcher.js` a `/api/coinalyze?path=...` címet hívja; a kulcs és a header kikerül a frontendből.
+    3. `src/setupProxy.js` a `npm start` fejlesztéshez; a whitelist közös modulban, teszttel.
+    4. `.env` átnevezése `COINALYZE_API_KEY`-re; a `scripts/backtest.js` és `scripts/check-last-candle.js` regexének frissítése.
+    5. Ellenőrzés: `npm run build`, majd a `build/` mappában keresés a kulcsra (0 találat, ellenpróbával).
+    6. Vercel: `COINALYZE_API_KEY` Environment Variable (előtag nélkül); Deployment Protection → Vercel Authentication → All Deployments. Megnézendő, hogy a Hobby csomag engedi-e.
+  - Ha a kulcsot tartalmazó build valaha publikus helyre került, a kulcsot rotálni kell.
+
 - **7. szakasz, 1. rész – kiértékelő modul (2026-11-13).** `src/utils/backtest.js` (tiszta függvények, 16 új teszt, összesen 88 zöld): `runBacktest` (1/3/6/12 órás előretekintés, találati arány, átlagos hozam, MFE/MAE, long/short és címkénkénti bontás, alapvonal: minden gyertyán long), `evaluateSignal` (oda-vissza díj bps-ben, funding: long fizet pozitív rátánál), `correlationMatrix` (dupla beszámítás), `informationCoefficient`. Belépés a jel gyertyájának zárásán; a MFE/MAE záróárakból számolt (alulbecsli a gyertyán belüli kilengést). Még NINCS valós adaton futtatva; nincs paraméterhangolás. Következő: futtató szkript valós Coinalyze-adattal (a lekérhető history hossza korlátozza a mintát).
 
 - **7. szakasz, 2. rész – első valós futtatás (2026-11-13).** `scripts/backtest.js` (`npx sucrase-node scripts/backtest.js [órák] [bps]`; csak olvas, a kulcsot nem írja ki). Minta: SOLUSDT_PERP.A + 3 spot, 1500 órányi (~62 nap) gyertya, 1408 snapshot a z-ablak bemelegedése után; 10 bps oda-vissza költség, funding NEM beszámítva (a ráta egysége nincs megerősítve). Címkék: 139 BULL, 110 BEAR, 1159 NEUTRAL; nincs STRONG jel.
@@ -48,7 +58,7 @@ Egyszerre egy hiba; módosítás előtt kód és forrásadat vizsgálata; képle
   - **Hosszabb minta (2026-11-13):** az API óránkénti adatból legfeljebb 2016 gyertyát (12 hét) ad vissza, hiába kérünk többet; a percenkénti 40 hívás nem szűk keresztmetszet (a teljes lekérés ~20 mp). Érvényes snapshot így is csak ~1470 (a hiányzó források, valószínűleg OI/likvidáció, rövidebb múltat adnak). A 2016 órás futás ugyanazt mutatja (IC 0,00–0,07, zaj). Hosszabb minta csak úgy lesz, ha a snapshotokat/nyers adatot időnként mentjük (napló).
   - **Szerepdöntés (felhasználó, 2026-11-13):** a mutató NEM előrejelző; a belépési döntés a TradingView, a LiqHeatmap és a Tapesurf adataival együtt születik. A modell állapotleíró/kontextus; nagy előrejelzést nem várunk tőle, a paramétereket nem hangoljuk.
 
-- **Végső tesztelés: waterfall összeg (2026-11-13) – KÉSZ.** A crowding tag a maradék (`raw − base`), ezért önmagában nem bizonyít semmit; új, 2000 véletlen esetes teszt a tagokat (order flow, spot, likvidáció, crowding) a képletből függetlenül újraszámolja, és ellenőrzi az összeget is (89+ zöld). Eredmény: a waterfall helyes, nincs rejtett hiba; a likvidációs tag csak liqZ > 2-nél nem nulla és csak csökkent, a crowding sosem növeli a pontszám nagyságát. Hátra: 8,31-es z-score eredete, spot delta „B" egység.
+- **Végső tesztelés: waterfall összeg (2026-11-13) – KÉSZ.** A crowding tag a maradék (`raw − base`), ezért önmagában nem bizonyít semmit; új, 2000 véletlen esetes teszt a tagokat (order flow, spot, likvidáció, crowding) a képletből függetlenül újraszámolja, és ellenőrzi az összeget is (89+ zöld). Eredmény: a waterfall helyes, nincs rejtett hiba; a likvidációs tag csak liqZ > 2-nél nem nulla és csak csökkent, a crowding sosem növeli a pontszám nagyságát.
 
 - **Végső tesztelés: spot egység (2026-11-13).** Az utolsó 6 óra átlaga (nyers API): perp 889 416 SOL/óra, SOLUSD.A 97 534, SOLUSDC.A 24 684, SOLUSDT.F 1 653; a spot meta mindhárom piacnál base=SOL. Átlagos ügyletméret spot: ~15 SOL (≈ 1 200 USD); ha a `v` USD lenne, ez ~15 USD/ügylet és 97 ezer USD/óra Binance SOL spoton, ami irreális. Következtetés: a spot `v` is SOL (BASE), a konverzió (× záróár) helyes. A kijelzett „B": a `compact()` hu-HU formátuma E = ezer, M = millió, Mrd = milliárd, **B = billió (10^12)**, ami angol olvasatban (billion = 10^9) félrevezető; a spot delta valós nagyságrendje E–M (százezer–millió USD), tehát „B" nem valós érték, hanem hibás megjelenítés vagy félreolvasás. Még nyitott: melyik nézetben látszott a „B".
 
